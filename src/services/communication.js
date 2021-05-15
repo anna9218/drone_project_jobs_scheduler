@@ -11,8 +11,8 @@ export async function fetchModelNames(){
     .then((response) => (response.data), (error) => {console.log(error)});
 }
 
-export async function fetchModel(){
-    return axios.get('http://localhost:5000/fetch_model_names')
+export async function fetchModelParams(){
+    return axios.get('http://localhost:5000/fetch_model_parameters')
     .then((response) => (response.data), (error) => {console.log(error)});
 }
 

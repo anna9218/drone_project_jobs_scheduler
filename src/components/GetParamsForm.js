@@ -13,7 +13,6 @@ class GetParamsForm extends React.Component{
         super(props);
         this.displayParams = this.displayParams.bind(this);
         this.state = {
-                // params_array: props.params,
                 paramsArray: props.parameters,
         };
     }

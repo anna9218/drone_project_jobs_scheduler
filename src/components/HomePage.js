@@ -58,17 +58,21 @@ class HomePage extends React.Component{
             {/* <div style={{marginTop:"1%", marginLeft: "25%", marginRight: "25%", display: "flex", justifyContent: "center", alignItems: "center"}}>
                 <h1>Scheduler</h1>
             </div> */}
+            <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
             <Row>
                 {/* <Col xs="3">
                 <Button variant="info" size="lg" onClick={() => this.setState({menuToShow: MenuEnum.run_job})}> Run Job </Button>
                 <br />
                 <Button variant="info" size="lg" onClick={() => this.setState({menuToShow: MenuEnum.manage_jobs})}> Manage Jobs </Button>
                 </Col> */}
-
-                <Col xs="6">
-                    {menu}
-                </Col>
+                {menu}
             </Row>
+            </div>
             </Router>
             </div>
             );

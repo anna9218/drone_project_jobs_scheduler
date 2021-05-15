@@ -24,22 +24,6 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import FolderTree, { testData } from 'react-folder-tree';
 
 
-
-
-// export const RunJobForm = () => {
-//   const onTreeStateChange = state => console.log('tree state: ', state);
-//   console.log(testData);
-
-//   return (
-//     <FolderTree
-//       data={ testData }
-//       onChange={ onTreeStateChange }
-//     />
-//   );
-// };
-
-// export default RunJobForm;
-
 class RunJobForm extends React.Component{
   constructor(props) {
       super(props);
@@ -49,10 +33,14 @@ class RunJobForm extends React.Component{
           queryOperator: '=',
           queryValue: '',
           predictionVariables: [],
-          queries: [],  //[["weather", "=", "summer"],[...]]
+          selectedPredictionVariable: '',
+          queries: {},  //{'age': ['RangeType', min_value, max_value],
+                        //'age': ['MinType', min_value],
+                        //'hour': ['MaxType', max_value],...}
           models: [],
           selectedModel: '',
           modelParams: [],
+          modelParamsToSend: [],
     };
 
     this.fetchParameters();
@@ -79,12 +67,11 @@ class RunJobForm extends React.Component{
     promise.then((data) => {
       console.log(data)
       if(data !== undefined){
-        console.log(data)
-        if (data != null){   // if there are parameters to display
-            this.setState({models: data});
+        console.log(data["data"])
+        if (data["data"] != null){   // if there are models to display
+            this.setState({models: data["data"]});
         }
         else{
-            // alert(data["msg"])
             this.setState({models: "There are no available models..."});   // no parameters to display
         }
       }});
@@ -112,33 +99,52 @@ class RunJobForm extends React.Component{
   }
 
   addQuery(){
+    // TODO - check if there are no duplicates of the same parameter
     var queryStr = this.state.queryParameter + this.state.queryOperator + this.state.queryValue;
     console.log(queryStr);
-    this.state.queries.push([this.state.queryParameter, this.state.queryOperator, this.state.queryValue]);
-    console.log(this.state.queries);
+    // this.state.queries.push([this.state.queryParameter, this.state.queryOperator, this.state.queryValue]);
+    if (this.state.queryOperator === 'Range') {
+      this.state.queries[this.state.queryParameter] = ['RangeType', this.state.queryValue];
+    }
+    if (this.state.queryOperator === '>=') {
+      this.state.queries[this.state.queryParameter] = ['MinType', this.state.queryValue];
+    }
+    if (this.state.queryOperator === '<=') {
+      this.state.queries[this.state.queryParameter] = ['MaxType', this.state.queryValue];
+    }
+    if (this.state.queryOperator === 'All') {
+      this.state.queries[this.state.queryParameter] = ['AllValuesType'];
+    }
+    if (this.state.queryOperator === '=') {
+      var values = this.state.queryValue.split(",")
+      this.state.queries[this.state.queryParameter] = ['SpecificValuesType', values];
+    }
 
+    console.log(this.state.queries);
   }
 
   fetchModelParams(){
-    const promise = Service.fetchModel();
+    const promise = Service.fetchModelParams();
     promise.then((data) => {
       if(data !== undefined){
-        if (data["data"] != null){   // if there are parameters to display
+        if (data["data"] != null){   // if there are model parameters to display
             this.setState({modelParams: data["data"]});
         }
         else{
-            // alert(data["msg"])
-            this.setState({modelParams: "There are no available models..."});   // no parameters to display
+            this.setState({modelParams: "There are no available params for the selected model..."});   // no parameters to display
         }
       }});
   }
 
   submitJob(){
     alert("yay");
-    // const promise = Service.submitJob();
-    // promise.then((data) => {
-    //   alert("yay");
-    //   });
+    const promise = Service.submitJob(this.queries, this.selectedPredictionVariable, this.selectedModel, this.modelParamsToSend);
+    promise.then((data) => {
+      if(data !== undefined){
+        if (data["data"] != null){   // if there are parameters to display
+            console.log(data["msg"]);
+        }
+      }});
   }
   
 
@@ -207,8 +213,14 @@ class RunJobForm extends React.Component{
 
           {/* <br /> */}
           {/* <Container fluid> */}
+          <Form.Group as={Row}>
+          <Form.Label column sm="9">The added queries are shown below:</Form.Label>
+          </Form.Group>
           <Jumbotron id='jumbotron' fluid>
           <List>
+            <ListItem>
+              <ListItemText primary="Queries" />
+            </ListItem>
             <ListItem>
               <ListItemText primary="Queries" />
             </ListItem>
