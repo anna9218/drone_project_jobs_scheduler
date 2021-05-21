@@ -8,12 +8,6 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
 
 import GetParamsForm from './GetParamsForm'
@@ -21,31 +15,53 @@ import * as Service from '../services/communication';
 
 import DeleteIcon from '@material-ui/icons/Delete';
     
-import FolderTree, { testData } from 'react-folder-tree';
-
 
 class RunJobForm extends React.Component{
   constructor(props) {
       super(props);
-      this.state={
-          parameters: [],
+    //   this.state={
+    //       parameters: [],
+    //       queryParameter: '',
+    //       queryOperator: '=',
+    //       queryValue: '',
+    //       predictionVariables: ["Location"],
+    //       selectedPredictionVariable: '',
+    //       queriesForDisplay: [],
+    //       queries: {},  //{'age': ['RangeType', min_value, max_value],
+    //                     //'age': ['MinType', min_value],
+    //                     //'hour': ['MaxType', max_value],...
+    //                     // 'age': ['SpecificValuesType', value1, value2, ...]
+    //                     // 'age': ['SpecificValuesType', value1]
+    //                     // 'age': ['AllValuesType'] }
+    //       models: [],
+    //       selectedModel: '',
+    //       modelParams: [],
+    //       modelParamsToSend: {},
+    // };
+        this.state={
+          parameters: ["age", "weather"],
           queryParameter: '',
           queryOperator: '=',
           queryValue: '',
-          predictionVariables: [],
+          predictionVariables: ["Location"],
           selectedPredictionVariable: '',
+          queriesForDisplay: [],
           queries: {},  //{'age': ['RangeType', min_value, max_value],
                         //'age': ['MinType', min_value],
-                        //'hour': ['MaxType', max_value],...}
-          models: [],
+                        //'hour': ['MaxType', max_value],...
+                        // 'age': ['SpecificValuesType', value1, value2, ...]
+                        // 'age': ['SpecificValuesType', value1]
+                        // 'age': ['AllValuesType'] }
+          models: ["LSTM", "GRU"],
           selectedModel: '',
           modelParams: [],
-          modelParamsToSend: [],
+          modelParamsToSend: {},
     };
 
+    
     this.fetchParameters();
     this.fetchModelNames();
-    this.fetchTargetVariables();
+    // this.fetchTargetVariables();
   }
 
   fetchParameters(){
@@ -77,19 +93,19 @@ class RunJobForm extends React.Component{
       }});
   }
 
-  fetchTargetVariables(){
-    const promise = Service.fetchTargetVariables();
-    promise.then((data) => {
-      if(data !== undefined){
-        if (data["data"] != null){   // if there are parameters to display
-            this.setState({predictionVariables: data["data"]});
-        }
-        else{
-            // alert(data["msg"])
-            this.setState({predictionVariables: "There are no available target variables..."});   // no parameters to display
-        }
-      }});
-  }
+  // fetchTargetVariables(){
+  //   const promise = Service.fetchTargetVariables();
+  //   promise.then((data) => {
+  //     if(data !== undefined){
+  //       if (data["data"] != null){   // if there are parameters to display
+  //           this.setState({predictionVariables: data["data"]});
+  //       }
+  //       else{
+  //           // alert(data["msg"])
+  //           this.setState({predictionVariables: "There are no available target variables..."});   // no parameters to display
+  //       }
+  //     }});
+  // }
 
   isAllOperator(){
     if(this.state.queryOperator == "All"){
@@ -99,10 +115,10 @@ class RunJobForm extends React.Component{
   }
 
   addQuery(){
-    // TODO - check if there are no duplicates of the same parameter
     var queryStr = this.state.queryParameter + this.state.queryOperator + this.state.queryValue;
-    console.log(queryStr);
-    // this.state.queries.push([this.state.queryParameter, this.state.queryOperator, this.state.queryValue]);
+    this.setState({queriesForDisplay: [...this.state.queriesForDisplay, queryStr]})
+    console.log(this.state.queriesForDisplay);
+
     if (this.state.queryOperator === 'Range') {
       this.state.queries[this.state.queryParameter] = ['RangeType', this.state.queryValue];
     }
@@ -120,28 +136,37 @@ class RunJobForm extends React.Component{
       this.state.queries[this.state.queryParameter] = ['SpecificValuesType', values];
     }
 
-    console.log(this.state.queries);
+    // console.log(this.state.queries);
+  }
+
+  removeQuery(query){
+    var queries = this.state.queriesForDisplay;
+    const index = queries.indexOf(query);
+    queries.splice(index, 1);
+    this.setState({queriesForDisplay: queries});
   }
 
   fetchModelParams(){
-    const promise = Service.fetchModelParams();
-    promise.then((data) => {
-      if(data !== undefined){
-        if (data["data"] != null){   // if there are model parameters to display
-            this.setState({modelParams: data["data"]});
-        }
-        else{
-            this.setState({modelParams: "There are no available params for the selected model..."});   // no parameters to display
-        }
-      }});
+    // const promise = Service.fetchModelParams();
+    // promise.then((data) => {
+    //   if(data !== undefined){
+    //     if (data["data"] != null){   // if there are model parameters to display
+    //         this.setState({modelParams: data["data"]});
+    //     }
+    //     else{
+    //         this.setState({modelParams: "There are no available params for the selected model..."});   // no parameters to display
+    //     }
+    //   }});
+    this.setState({modelParams: ["epochs", "batch_size"]});
   }
 
   submitJob(){
     alert("yay");
+    console.log(this.state.modelParamsToSend);
     const promise = Service.submitJob(this.queries, this.selectedPredictionVariable, this.selectedModel, this.modelParamsToSend);
     promise.then((data) => {
       if(data !== undefined){
-        if (data["data"] != null){   // if there are parameters to display
+        if (data["msg"] != null){
             console.log(data["msg"]);
         }
       }});
@@ -149,15 +174,49 @@ class RunJobForm extends React.Component{
   
 
   render(){
+    
+    var ModelParamFields = this.state.modelParams.map((param) =>
+    <div>
+      <Form>
+        <Form.Group as={Row}>
+          <Form.Label column sm="4">{param}</Form.Label>
+          <Col>
+          <Form.Control id={param} 
+                    onChange={event => {
+                    this.state.modelParamsToSend[param] = event.target.value;
+                }}
+                type="text" placeholder="" />
+          </Col>
+        </Form.Group>
+      </Form>
+    </div>
+    );
+
+    var QueriesList = this.state.queriesForDisplay.map((queryString) =>
+    <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+      <Form inline>
+        <Form.Group as={Row}>
+          <Form.Label sm="4">{queryString}</Form.Label>
+          <Col>
+            <Button variant="outline-info" size="sm" onClick={()=>{this.removeQuery(queryString)}}>
+              Remove
+              </Button>
+          </Col>
+        </Form.Group>
+      </Form>
+    </div>
+    );
+
+
     return(
       <div>
-        <div style={{marginTop:"1%", marginLeft: "25%", marginRight: "25%", display: "flex", justifyContent: "center", alignItems: "center"}}>
-            <h3>Run Job:</h3>
+        <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
+            <h2>Run Job</h2>
         </div>
 
         <Form>
           <Form.Group as={Row}>
-          <Form.Label column sm="9">Please select a subset of the flights that you would like to use:</Form.Label>
+            <Form.Label column sm="9">Please select a subset of the flights that you would like to use during training:</Form.Label>
           </Form.Group>
 
           <Form.Group as={Row}>
@@ -176,6 +235,7 @@ class RunJobForm extends React.Component{
                   Select according to which parameter you would like to filter the flights.
                 </Form.Text>
               </Col>
+
               <Col sm={3}>
                 <Form.Control as="select" value={this.queryOperator} 
                 onChange={event => this.setState({queryOperator: event.target.value})}>
@@ -189,6 +249,7 @@ class RunJobForm extends React.Component{
                   Select the operator for your query.
                 </Form.Text>
               </Col>  
+
               <Col>
                 <Form.Control type="text" placeholder="" disabled={this.isAllOperator()} value={this.queryValue}
                 onChange={event => this.setState({queryValue: event.target.value})}/>
@@ -196,43 +257,35 @@ class RunJobForm extends React.Component{
                 Enter the value.
                 </Form.Text>
                 <Form.Text className="text-muted">
-                * For Range - please enter in the following format: (lower_value, upper_value)
+                * For Range please enter the values in the following format: (lower_value, upper_value)
+                </Form.Text>
+                <Form.Text className="text-muted">
+                * For equals sign (i.e. =) please enter the value\s in the following format: value1 or value1,value2,...
                 </Form.Text>
               </Col>
+
               <Col sm={1}>
-              <Button variant="info" onClick= {(() => {this.addQuery()})}>
-                  Add
-              </Button>
-            </Col>
+                <Button variant="info" onClick= {(() => {this.addQuery()})}>
+                    Add
+                </Button>
+              </Col>
           </Form.Group>
 
           <br />
-          {/* <Button variant="info" onClick= {(event => {this.addQuery()})}>
-              Add
-          </Button> */}
 
-          {/* <br /> */}
-          {/* <Container fluid> */}
           <Form.Group as={Row}>
           <Form.Label column sm="9">The added queries are shown below:</Form.Label>
           </Form.Group>
+
           <Jumbotron id='jumbotron' fluid>
-          <List>
-            <ListItem>
-              <ListItemText primary="Queries" />
-            </ListItem>
-            <ListItem>
-              <ListItemText primary="Queries" />
-            </ListItem>
-          </List>
+            {QueriesList}
           </Jumbotron>
-          {/* </Container> */}
 
           <br />
 
           <Form.Group as={Row}>
-            <Form.Label column sm="4">Select the target variable:</Form.Label>
-            <Col>
+            <Form.Label column sm="3">Select the target variable:</Form.Label>
+            <Col column sm="6">
               {/* <Form.Control type="text" placeholder="" /> */}
               <Form.Control as="select" value={this.queryOperator} 
                 onChange={event => this.setState({selectedModel: event.target.value})}>
@@ -249,8 +302,6 @@ class RunJobForm extends React.Component{
               </Form.Text>
             </Col> 
           </Form.Group>
-
-          <br />
 
           <Form.Group as={Row}>
               <Form.Label column sm="3">Select model:</Form.Label>
@@ -277,24 +328,23 @@ class RunJobForm extends React.Component{
               </Col> 
           </Form.Group>
 
-          
-
           <br />
 
           <Form.Group as={Row}>
-            <GetParamsForm parameters={this.state.modelParams} />
+            {ModelParamFields}
           </Form.Group>
 
-          <Button variant="info" size="md" onClick={() => {this.submitJob()}}> 
-            Submit Job 
-          </Button>
+          <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+            <Button variant="info" size="md" onClick={() => {this.submitJob()}}> 
+              Submit Job 
+            </Button>
+          </div>
 
         </Form>
       </div>
 
     );
   }
-
 }
 
 export default RunJobForm;

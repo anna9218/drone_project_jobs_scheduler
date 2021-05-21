@@ -12,8 +12,11 @@ class ManageJobsForm extends React.Component{
 
     render(){
         return(
-            <div style={{marginTop:"1%", marginLeft: "25%", marginRight: "25%", display: "flex", justifyContent: "center", alignItems: "center"}}>
-            <h3>Manage Jobs:</h3>
+            <div>
+            <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
+                <h3>Manage Jobs:</h3>
+            </div>
+
             </div>
         );
     }
