@@ -9,12 +9,12 @@ import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
+import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
+import Card from 'react-bootstrap/Card';
 
-import GetParamsForm from './GetParamsForm'
 import * as Service from '../services/communication';
 
-import DeleteIcon from '@material-ui/icons/Delete';
-    
 
 class RunJobForm extends React.Component{
   constructor(props) {
@@ -58,10 +58,8 @@ class RunJobForm extends React.Component{
           modelParamsToSend: {},
     };
 
-    
     this.fetchParameters();
     this.fetchModelNames();
-    // this.fetchTargetVariables();
   }
 
   fetchParameters(){
@@ -93,19 +91,6 @@ class RunJobForm extends React.Component{
       }});
   }
 
-  // fetchTargetVariables(){
-  //   const promise = Service.fetchTargetVariables();
-  //   promise.then((data) => {
-  //     if(data !== undefined){
-  //       if (data["data"] != null){   // if there are parameters to display
-  //           this.setState({predictionVariables: data["data"]});
-  //       }
-  //       else{
-  //           // alert(data["msg"])
-  //           this.setState({predictionVariables: "There are no available target variables..."});   // no parameters to display
-  //       }
-  //     }});
-  // }
 
   isAllOperator(){
     if(this.state.queryOperator == "All"){
@@ -116,11 +101,10 @@ class RunJobForm extends React.Component{
 
   addQuery(){
     var queryStr = this.state.queryParameter + this.state.queryOperator + this.state.queryValue;
-    this.setState({queriesForDisplay: [...this.state.queriesForDisplay, queryStr]})
-    console.log(this.state.queriesForDisplay);
-
+  
     if (this.state.queryOperator === 'Range') {
       this.state.queries[this.state.queryParameter] = ['RangeType', this.state.queryValue];
+      queryStr = this.state.queryParameter + ": " + this.state.queryOperator + this.state.queryValue;
     }
     if (this.state.queryOperator === '>=') {
       this.state.queries[this.state.queryParameter] = ['MinType', this.state.queryValue];
@@ -130,20 +114,49 @@ class RunJobForm extends React.Component{
     }
     if (this.state.queryOperator === 'All') {
       this.state.queries[this.state.queryParameter] = ['AllValuesType'];
+      queryStr = this.state.queryParameter + ": " + this.state.queryOperator;
     }
     if (this.state.queryOperator === '=') {
       var values = this.state.queryValue.split(",")
       this.state.queries[this.state.queryParameter] = ['SpecificValuesType', values];
     }
 
+    this.setState({queriesForDisplay: [...this.state.queriesForDisplay, queryStr]})
+
+    this.setState({predictionVariables: [...this.state.predictionVariables, this.state.queryParameter]});
+    // console.log(this.state.predictionVariables);
+    // console.log(this.state.queriesForDisplay);
     // console.log(this.state.queries);
   }
 
   removeQuery(query){
+    // remove query from display
     var queries = this.state.queriesForDisplay;
     const index = queries.indexOf(query);
     queries.splice(index, 1);
     this.setState({queriesForDisplay: queries});
+
+    // console.log(query);
+    // console.log(this.state.predictionVariables);
+
+    // remove target variable
+    var predictionVars = this.state.predictionVariables;
+    var parameter = query.split(/:|=/)[0];
+    const indexPar = predictionVars.indexOf(parameter);
+    predictionVars.splice(indexPar, 1);
+    this.setState({predictionVariables: predictionVars});
+
+    // console.log(parameter);
+
+    // remove query from queries to send 
+    var queriesDict = this.state.queries
+    // console.log(queriesDict);
+    delete queriesDict[parameter]
+    // console.log(queriesDict);
+    this.setState({queries: queriesDict});
+
+    // console.log(this.state.predictionVariables);
+    // console.log(this.state.queries);
   }
 
   fetchModelParams(){
@@ -162,14 +175,36 @@ class RunJobForm extends React.Component{
 
   submitJob(){
     alert("yay");
+    console.log(this.state.queries);
+    console.log(this.state.selectedPredictionVariable);
+    console.log(this.state.selectedModel);
     console.log(this.state.modelParamsToSend);
-    const promise = Service.submitJob(this.queries, this.selectedPredictionVariable, this.selectedModel, this.modelParamsToSend);
+
+    const promise = Service.submitJob(this.state.queries, 
+                                      this.state.selectedPredictionVariable, 
+                                      this.state.selectedModel, 
+                                      this.state.modelParamsToSend);
     promise.then((data) => {
       if(data !== undefined){
         if (data["msg"] != null){
             console.log(data["msg"]);
+            this.resetForm();
         }
       }});
+  }
+
+  resetForm(){
+    // reset all collected fields' values
+    this.setState({queryParameter: ''});
+    this.setState({queryOperator: '='});
+    this.setState({queryValue: ''});
+    this.setState({predictionVariables: ["Location"]});
+    this.setState({selectedPredictionVariable: ''});
+    this.setState({queriesForDisplay: []});
+    this.setState({queries: {}});
+    this.setState({selectedModel: ''});
+    this.setState({modelParams: []});
+    this.setState({modelParamsToSend: {}});
   }
   
 
@@ -179,8 +214,8 @@ class RunJobForm extends React.Component{
     <div>
       <Form>
         <Form.Group as={Row}>
-          <Form.Label column sm="4">{param}</Form.Label>
-          <Col>
+          <Form.Label column sm="3">{param}:</Form.Label>
+          <Col column sm="6">
           <Form.Control id={param} 
                     onChange={event => {
                     this.state.modelParamsToSend[param] = event.target.value;
@@ -189,6 +224,7 @@ class RunJobForm extends React.Component{
           </Col>
         </Form.Group>
       </Form>
+      <br />
     </div>
     );
 
@@ -201,6 +237,7 @@ class RunJobForm extends React.Component{
             <Button variant="outline-info" size="sm" onClick={()=>{this.removeQuery(queryString)}}>
               Remove
               </Button>
+              <DeleteIcon />
           </Col>
         </Form.Group>
       </Form>
@@ -220,75 +257,79 @@ class RunJobForm extends React.Component{
           </Form.Group>
 
           <Form.Group as={Row}>
-              <Col>
-                <Form.Control as="select" value={this.queryParameter} 
-                onChange={event => this.setState({queryParameter: event.target.value})}>
-                  <option>Select Parameter</option>
-                    {this.state.parameters !== null ?
-                        this.state.parameters.map(parameter => (
-                        <option value={parameter}>{parameter}</option>
-                        ))
-                        : null
-                    }
-                </Form.Control>
-                <Form.Text className="text-muted">
-                  Select according to which parameter you would like to filter the flights.
-                </Form.Text>
-              </Col>
+            <Col>
+              <Form.Control as="select" value={this.queryParameter} 
+              onChange={event => this.setState({queryParameter: event.target.value})}>
+                <option>Select Parameter</option>
+                  {this.state.parameters !== null ?
+                      this.state.parameters.map(parameter => (
+                      <option value={parameter}>{parameter}</option>
+                      ))
+                      : null
+                  }
+              </Form.Control>
+              <Form.Text className="text-muted">
+                Select according to which parameter you would like to filter the flights.
+              </Form.Text>
+            </Col>
 
-              <Col sm={3}>
-                <Form.Control as="select" value={this.queryOperator} 
-                onChange={event => this.setState({queryOperator: event.target.value})}>
-                  <option value={'='}> {'='} </option>
-                  <option value={'<='}> {'<='} </option>
-                  <option value={'>='}> {'>='} </option>
-                  <option value={'Range'}> {'Range'} </option>
-                  <option value={'All'}> {'All'} </option>
-                </Form.Control>
-                <Form.Text className="text-muted">
-                  Select the operator for your query.
-                </Form.Text>
-              </Col>  
+            <Col sm={3}>
+              <Form.Control as="select" value={this.queryOperator} 
+              onChange={event => this.setState({queryOperator: event.target.value})}>
+                <option value={'='}> {'='} </option>
+                <option value={'<='}> {'<='} </option>
+                <option value={'>='}> {'>='} </option>
+                <option value={'Range'}> {'Range'} </option>
+                <option value={'All'}> {'All'} </option>
+              </Form.Control>
+              <Form.Text className="text-muted">
+                Select the operator for your query.
+              </Form.Text>
+            </Col>  
 
-              <Col>
-                <Form.Control type="text" placeholder="" disabled={this.isAllOperator()} value={this.queryValue}
-                onChange={event => this.setState({queryValue: event.target.value})}/>
-                <Form.Text className="text-muted">
-                Enter the value.
-                </Form.Text>
-                <Form.Text className="text-muted">
-                * For Range please enter the values in the following format: (lower_value, upper_value)
-                </Form.Text>
-                <Form.Text className="text-muted">
-                * For equals sign (i.e. =) please enter the value\s in the following format: value1 or value1,value2,...
-                </Form.Text>
-              </Col>
+            <Col>
+              <Form.Control type="text" placeholder="" disabled={this.isAllOperator()} value={this.isAllOperator() ? "" : this.state.queryValue}
+              onChange={event => this.setState({queryValue: event.target.value})}/>
+              <Form.Text className="text-muted">
+              Enter the value.
+              </Form.Text>
+              <Form.Text className="text-muted">
+              * For Range please enter the values in the following format: (lower_value, upper_value)
+              </Form.Text>
+              <Form.Text className="text-muted">
+              * For equals sign (i.e. =) please enter the value\s in the following format: value1 or value1,value2,...
+              </Form.Text>
+            </Col>
 
-              <Col sm={1}>
-                <Button variant="info" onClick= {(() => {this.addQuery()})}>
-                    Add
-                </Button>
-              </Col>
+            <Col sm={1}>
+              <Button variant="info" onClick= {(() => {this.addQuery()})}>
+                  Add
+              </Button>
+            </Col>
           </Form.Group>
 
           <br />
 
-          <Form.Group as={Row}>
-          <Form.Label column sm="9">The added queries are shown below:</Form.Label>
-          </Form.Group>
+          {/* <Form.Group as={Row}>
+            <Form.Label column sm="9">The added queries are shown below for your convenience. You may remove queries as you need.</Form.Label>
+          </Form.Group> */}
 
-          <Jumbotron id='jumbotron' fluid>
-            {QueriesList}
-          </Jumbotron>
-
+          <Card border="info" bg="light">
+            <Card.Body>
+            <Card.Title>Selected Queries</Card.Title>
+            <Card.Text>
+              The added queries are shown below for your convenience. You may remove queries as you need.
+            </Card.Text>
+              {QueriesList}
+            </Card.Body>
+          </Card>
           <br />
 
           <Form.Group as={Row}>
             <Form.Label column sm="3">Select the target variable:</Form.Label>
             <Col column sm="6">
-              {/* <Form.Control type="text" placeholder="" /> */}
               <Form.Control as="select" value={this.queryOperator} 
-                onChange={event => this.setState({selectedModel: event.target.value})}>
+                onChange={event => this.setState({selectedPredictionVariable: event.target.value})}>
                   <option>Select Variable</option>
                     {this.state.predictionVariables !== null ?
                         this.state.predictionVariables.map(variable => (
@@ -304,33 +345,33 @@ class RunJobForm extends React.Component{
           </Form.Group>
 
           <Form.Group as={Row}>
-              <Form.Label column sm="3">Select model:</Form.Label>
-              <Col column sm="6"> 
-                <Form.Control as="select" value={this.queryOperator} 
-                onChange={event => this.setState({selectedModel: event.target.value})}>
-                  <option>Select Model</option>
-                    {this.state.models !== null ?
-                        this.state.models.map(model => (
-                        <option value={model}>{model}</option>
-                        ))
-                        : null
-                    }
-                </Form.Control>
-                <Form.Text className="text-muted">
-                Select the name of the model you would like to use.
-                </Form.Text>
-              </Col> 
+            <Form.Label column sm="3">Select model:</Form.Label>
+            <Col column sm="6"> 
+              <Form.Control as="select" value={this.queryOperator} 
+              onChange={event => this.setState({selectedModel: event.target.value})}>
+                <option>Select Model</option>
+                  {this.state.models !== null ?
+                      this.state.models.map(model => (
+                      <option value={model}>{model}</option>
+                      ))
+                      : null
+                  }
+              </Form.Control>
+              <Form.Text className="text-muted">
+              Select the name of the model you would like to use.
+              </Form.Text>
+            </Col> 
               
-              <Col column sm="3">
-                <Button variant="info" size="md" onClick= {() => {this.fetchModelParams()}}> 
-                  Fetch Model 
-                </Button>
-              </Col> 
+            <Col column sm="3">
+              <Button variant="info" size="md" onClick= {() => {this.fetchModelParams()}}> 
+                Fetch Model 
+              </Button>
+            </Col> 
           </Form.Group>
 
           <br />
 
-          <Form.Group as={Row}>
+          <Form.Group>
             {ModelParamFields}
           </Form.Group>
 

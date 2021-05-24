@@ -23,12 +23,13 @@ export async function fetchTargetVariables(){
 
 export async function submitJob(queries, targetVariable,  modelType, modelParams){
     var formData = new FormData();
-    formData.append("queries", JSON.stringify(queries));
-    formData.append("targetVariable", targetVariable);
-    formData.append("modelType", modelType);
-    formData.append("modelParams", JSON.stringify(modelParams));
+    formData.append("user_email", "anna.9218@gmail.com");
+    formData.append("logs_queries", JSON.stringify(queries));
+    formData.append("target_variable", targetVariable);
+    formData.append("model_type", modelType);
+    formData.append("model_details", JSON.stringify(modelParams));
 
-    return axios.post('http://localhost:5000/upload_flight', formData, 
+    return axios.post('http://localhost:5000/run_new_job', formData, 
     {
         headers: {
         'Content-Type': 'multipart/form-data'
@@ -36,5 +37,25 @@ export async function submitJob(queries, targetVariable,  modelType, modelParams
     })
     .then((response) => (response.data), (error) => {console.log(error)});
 }
+
+
+export async function fetchJobs(){
+    return axios.get('http://localhost:5000/fetch_jobs')
+    .then((response) => (response.data), (error) => {console.log(error)});
+}
+
+export async function cancelJob(job_id){
+    var formData = new FormData();
+    formData.append("job_id", job_id);
+
+    return axios.post('http://localhost:5000/cancel_job', formData, 
+    {
+        headers: {
+        'Content-Type': 'multipart/form-data'
+        },
+    })
+    .then((response) => (response.data), (error) => {console.log(error)});
+}
+
 
 
