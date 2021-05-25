@@ -246,15 +246,65 @@ class RunJobForm extends React.Component{
 
 
     return(
-      <div>
+      <div style={{marginRight:"5%", marginLeft:"5%", marginBottom:"3%"}}>
         <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
             <h2>Run Job</h2>
         </div>
 
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+            <h6>Here you may create a new job which will be sent to Slurm. 
+              The proccess consists of two parts: selecting the data for training, and defining a deep learning model that will be using the selected data.</h6>
+        </div>
+
         <Form>
           <Form.Group as={Row}>
-            <Form.Label column sm="9">Please select a subset of the flights that you would like to use during training:</Form.Label>
+            <Form.Label column sm="9"></Form.Label>
           </Form.Group>
+
+          <Form.Group>
+            <Row>
+              <Form.Label column sm="9">Please select a subset of the flights that you would like to use during training:</Form.Label>
+            </Row>
+            <Row>
+              <Form.Label column sm="9">Here you may construct queries (much like SQL queries) in order to select the exact data.</Form.Label>
+            </Row>
+            <Row>
+            <Form.Label column sm="9">1. Select the parameter. </Form.Label>
+            </Row>
+            <Row>
+            <Form.Label column sm="9">2. Select the operator. </Form.Label>
+            </Row>
+            <Row>
+            <Form.Label column sm="9">3. Enter the desired value according to the listed format: </Form.Label>
+            </Row>
+            <Container>
+            <Row>
+              <Col md={{span: 4}}>
+                <Form.Label>{'\u25CF'} Chosen operator: [=]</Form.Label>
+              </Col>
+              <Col md={{span: 5}}>
+                <Form.Label>Format: [value] or [value1,value2,...] without spaces.</Form.Label>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={{span: 4}}>
+                <Form.Label>{'\u25CF'} Chosen operator: [&lt;=] or [&gt;=]</Form.Label>
+              </Col>
+              <Col md={{span: 4}}>
+                <Form.Label>Format: [value]</Form.Label>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={{span: 4}}>
+                <Form.Label>{'\u25CF'} Chosen operator: [Range]</Form.Label>
+              </Col>
+              <Col md={{span: 4}}>
+                <Form.Label>Format: (min_value,max_value) without spaces.</Form.Label>
+              </Col>
+            </Row>
+            </Container>
+          </Form.Group>
+
 
           <Form.Group as={Row}>
             <Col>

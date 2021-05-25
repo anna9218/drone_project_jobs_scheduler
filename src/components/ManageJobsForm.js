@@ -1,7 +1,7 @@
 import React from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import * as Service from '../services/communication';
-import * as Report from './Report';
+import Report from './Report';
 
 import Table from 'react-bootstrap/Table';
 import Modal from 'react-bootstrap/Modal';
@@ -23,20 +23,20 @@ class ManageJobsForm extends React.Component{
         super(props);
         this.state = {
             jobs: [
-                {'job_id': '001', 'start_time': '10:00', 'end_time': '11:00', 'status': 'COMPLETED', 'report': 'report object'},
-                {'job_id': '102', 'start_time': '11:00', 'end_time': '12:00', 'status': 'PENDING', 'report': 'report object'},
-                {'job_id': '456', 'start_time': '11:00', 'end_time': '12:00', 'status': 'RUNNING', 'report': 'report object'}
+                {'job_id': '001', 'start_time': '10:00', 'end_time': '11:00', 'status': 'COMPLETED', 'report': {accuracy: 80, loss: 0.43}},
+                {'job_id': '102', 'start_time': '11:00', 'end_time': '12:00', 'status': 'PENDING', 'report': {accuracy: 80, loss: 0.43}},
+                {'job_id': '456', 'start_time': '11:00', 'end_time': '12:00', 'status': 'RUNNING', 'report': {accuracy: 80, loss: 0.43}}
                 ],
             // isJobs: false,
-            job: {job_id: '002', 
-                    start_time: '11:00', 
-                    end_time: '12:00', 
-                    status: 'PENDING', 
-                    report: 'report object'},
+            // job: {job_id: '002', 
+            //         start_time: '11:00', 
+            //         end_time: '12:00', 
+            //         status: 'PENDING', 
+            //         report: 'report object'},
             modalShow: false,
         };
-        console.log(this.state.jobs);
-        console.log(this.state.job);
+        // console.log(this.state.jobs);
+        // console.log(this.state.job);
 
     // this.fetchJobs;
     }
@@ -84,17 +84,17 @@ class ManageJobsForm extends React.Component{
                     <td>{start_time}</td>
                     <td>{end_time}</td>
                     <td>{status}</td>
-                    {/* <td disabled={isReport} onClick={()=> window.open("report"+job_id, "_blank")}>{report}</td> */}
                     <td>
                         {/* <Button disabled={!isReport} variant='outline-info' onClick={()=> window.open("report"+job_id, "_blank")}> */}
-                        <Button disabled={!isReport} variant='outline-info' onClick={() => this.setState({modalShow: true})}>
+                        <Button disabled={!isReport} variant='outline-info' 
+                        onClick={() => this.setState({modalShow: true})}>
                             {reportText}
                         </Button>
-                        {/* <Report
+                        <Report
                             reportData={report}
                             show={this.state.modalShow}
-                            onHide={() => this.setState({modalShow: true})}
-                        /> */}
+                            onHide={() => this.setState({modalShow: false})}
+                        />
                     </td>
                     <td>
                         <Button disabled={!isCancelable} variant='outline-info' onClick={()=>{this.cancelJob(index, job_id)}}>
