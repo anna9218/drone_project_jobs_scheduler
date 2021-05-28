@@ -7,8 +7,18 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 
+// MODEL DETAILS LOOK LIKE THIS:
+// 'model_details': {'optimizer': "adam",
+// 'metrics': ["accuracy", "recall", "precision"],
+// 'iterations': 30,
+// 'batch_size': 64,
+// 'epochs': 500,
+// 'neurons_in_layer': 200},
+
+
 function renderJobData(reportData){
   console.log(reportData);
+
 
   var keys = Object.keys(reportData);
   var Fields = keys.map((key, index) =>
@@ -23,8 +33,44 @@ function renderJobData(reportData){
 
   console.log(Fields);
 
-
   return Fields;
+}
+
+function renderModelData(modelDetails){
+  console.log(modelDetails);
+
+  
+
+  const metrics = modelDetails['metrics'];
+  var metricsString = '';
+  metrics.map((metric) => metricsString = metricsString + metric + ', ');
+  metricsString = metricsString.slice(0, -2);
+
+  var keys = Object.keys(modelDetails);
+
+  var modelDetailsNew = {}
+  keys.map((key, index) => {
+    if (key === "metrics") {
+      modelDetailsNew[key] = metricsString;
+    }
+    else {
+      modelDetailsNew[key] = modelDetails[key];
+    }
+  })
+
+  // modelDetails['metrics'] = metricsString;
+
+  var ModelData = keys.map((key, index) =>
+    <div>
+    <Form>
+      <Form.Group as={Row}>
+        <Form.Label column sm="6">{key}: {modelDetailsNew[key]}</Form.Label>
+      </Form.Group>
+    </Form>
+  </div>
+  );
+
+  return ModelData;
 }
 
 function Report(props) {
@@ -45,6 +91,9 @@ function Report(props) {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          Model parameters:
+          {renderModelData(props.modelDetails)}
+          Model evaluation:
           {renderJobData(props.reportData)}
           {/* <p>
             Cras mattis consectetur purus sit amet fermentum. Cras justo odio,

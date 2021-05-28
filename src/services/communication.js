@@ -21,8 +21,9 @@ export async function fetchTargetVariables(){
     .then((response) => (response.data), (error) => {console.log(error)});
 }
 
-export async function submitJob(queries, targetVariable,  modelType, modelParams){
+export async function submitJob(job_name_by_user, queries, targetVariable,  modelType, modelParams){
     var formData = new FormData();
+    formData.append("job_name_by_user", job_name_by_user);
     formData.append("user_email", "anna.9218@gmail.com");
     formData.append("logs_queries", JSON.stringify(queries));
     formData.append("target_variable", targetVariable);
@@ -40,7 +41,15 @@ export async function submitJob(queries, targetVariable,  modelType, modelParams
 
 
 export async function fetchJobs(){
-    return axios.get('http://localhost:5000/fetch_jobs')
+    var formData = new FormData();
+    formData.append("user_email", "anna.9218@gmail.com");
+
+    return axios.post('http://localhost:5000/fetch_jobs', formData,
+    {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+            },
+    })
     .then((response) => (response.data), (error) => {console.log(error)});
 }
 

@@ -37,6 +37,7 @@ class RunJobForm extends React.Component{
     //       selectedModel: '',
     //       modelParams: [],
     //       modelParamsToSend: {},
+    //       jobName: '',
     // };
         this.state={
           parameters: ["age", "weather"],
@@ -56,6 +57,7 @@ class RunJobForm extends React.Component{
           selectedModel: '',
           modelParams: [],
           modelParamsToSend: {},
+          jobName: '',
     };
 
     this.fetchParameters();
@@ -70,7 +72,6 @@ class RunJobForm extends React.Component{
             this.setState({parameters: data["data"]});
         }
         else{
-            // alert(data["msg"])
             this.setState({parameters: "There are no available parameters..."});   // no parameters to display
         }
       }});
@@ -122,7 +123,6 @@ class RunJobForm extends React.Component{
     }
 
     this.setState({queriesForDisplay: [...this.state.queriesForDisplay, queryStr]})
-
     this.setState({predictionVariables: [...this.state.predictionVariables, this.state.queryParameter]});
     // console.log(this.state.predictionVariables);
     // console.log(this.state.queriesForDisplay);
@@ -160,7 +160,7 @@ class RunJobForm extends React.Component{
   }
 
   fetchModelParams(){
-    // const promise = Service.fetchModelParams();
+    // const promise = Service.fetchModelParams(this.state.selectedModel);
     // promise.then((data) => {
     //   if(data !== undefined){
     //     if (data["data"] != null){   // if there are model parameters to display
@@ -170,17 +170,21 @@ class RunJobForm extends React.Component{
     //         this.setState({modelParams: "There are no available params for the selected model..."});   // no parameters to display
     //     }
     //   }});
-    this.setState({modelParams: ["epochs", "batch_size"]});
+
+    this.setState({modelParams: [["optimizer", "str"], ["metrics", "list(str)"], ["epochs", "int"]]});
   }
 
   submitJob(){
-    alert("yay");
-    console.log(this.state.queries);
-    console.log(this.state.selectedPredictionVariable);
-    console.log(this.state.selectedModel);
-    console.log(this.state.modelParamsToSend);
+    // TODO - user_email + login
 
-    const promise = Service.submitJob(this.state.queries, 
+    // console.log(this.state.jobName);
+    // console.log(this.state.queries);
+    // console.log(this.state.selectedPredictionVariable);
+    // console.log(this.state.selectedModel);
+    // console.log(this.state.modelParamsToSend);
+
+    const promise = Service.submitJob(this.state.jobName,
+                                      this.state.queries, 
                                       this.state.selectedPredictionVariable, 
                                       this.state.selectedModel, 
                                       this.state.modelParamsToSend);
@@ -189,6 +193,7 @@ class RunJobForm extends React.Component{
         if (data["msg"] != null){
             console.log(data["msg"]);
             this.resetForm();
+            alert(data["msg"]);
         }
       }});
   }
@@ -209,18 +214,21 @@ class RunJobForm extends React.Component{
   
 
   render(){
-    
-    var ModelParamFields = this.state.modelParams.map((param) =>
+    // the fields relevant to a specific model
+    var ModelParamFields = this.state.modelParams.map(([param, paramType]) =>
     <div>
       <Form>
         <Form.Group as={Row}>
           <Form.Label column sm="3">{param}:</Form.Label>
           <Col column sm="6">
-          <Form.Control id={param} 
-                    onChange={event => {
-                    this.state.modelParamsToSend[param] = event.target.value;
-                }}
-                type="text" placeholder="" />
+            <Form.Control id={param} 
+                      onChange={event => {
+                      this.state.modelParamsToSend[param] = event.target.value;
+                  }}
+                  type="text" placeholder="" />
+            <Form.Text className="text-muted">
+                  Please enter a {paramType} type.
+            </Form.Text>
           </Col>
         </Form.Group>
       </Form>
@@ -257,9 +265,20 @@ class RunJobForm extends React.Component{
         </div>
 
         <Form>
-          <Form.Group as={Row}>
-            <Form.Label column sm="9"></Form.Label>
+          <Form.Group>
+            <Row>
+              <Form.Label column sm="9">First of all, please select a unique name for your new job:</Form.Label>
+            </Row>
+            <Row>
+              <Form.Label column sm="3">Job name:</Form.Label>
+              <Col column sm="6">
+                <Form.Control onChange={event => {this.setState({jobName: event.target.value})}} type="text" placeholder="" />
+              </Col>
+            </Row>
           </Form.Group>
+
+          <br />
+          <br />
 
           <Form.Group>
             <Row>
@@ -360,10 +379,6 @@ class RunJobForm extends React.Component{
 
           <br />
 
-          {/* <Form.Group as={Row}>
-            <Form.Label column sm="9">The added queries are shown below for your convenience. You may remove queries as you need.</Form.Label>
-          </Form.Group> */}
-
           <Card border="info" bg="light">
             <Card.Body>
             <Card.Title>Selected Queries</Card.Title>
@@ -373,7 +388,16 @@ class RunJobForm extends React.Component{
               {QueriesList}
             </Card.Body>
           </Card>
+          
           <br />
+          <br />
+
+          
+          <Form.Group>
+            <Row>
+              <Form.Label column sm="9">Now it is time to define the model and its parameters:</Form.Label>
+            </Row>
+          </Form.Group>
 
           <Form.Group as={Row}>
             <Form.Label column sm="3">Select the target variable:</Form.Label>

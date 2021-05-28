@@ -6,9 +6,6 @@ import Form from 'react-bootstrap/Form';
 
 
 class Readme extends React.Component{
-    // constructor(props) {
-    //     super(props);
-    // }
 
     render(){
         return(
