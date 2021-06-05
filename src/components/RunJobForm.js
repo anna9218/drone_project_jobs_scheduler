@@ -14,6 +14,7 @@ import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import Card from 'react-bootstrap/Card';
 
 import * as Service from '../services/communication';
+import { parser } from './TypeParser';
 
 
 class RunJobForm extends React.Component{
@@ -24,6 +25,7 @@ class RunJobForm extends React.Component{
           userEmail: '',
           parameters: [],
           queryParameter: '',
+          queryParameterType: '',
           queryOperator: '=',
           queryValue: '',
           queriesForDisplay: [],
@@ -72,6 +74,7 @@ class RunJobForm extends React.Component{
     promise.then((data) => {
       if(data !== undefined){
         if (data["data"] != null){   // if there are parameters to display
+            console.log(data["data"]);
             this.setState({parameters: data["data"]});
         }
         else{
@@ -107,22 +110,39 @@ class RunJobForm extends React.Component{
     var queryStr = this.state.queryParameter + this.state.queryOperator + this.state.queryValue;
   
     if (this.state.queryOperator === 'Range') {
-      this.state.queries[this.state.queryParameter] = ['RangeType', this.state.queryValue];
+      this.state.queries[this.state.queryParameter] = ['RangeType', parser("int", this.state.queryValue)];
       queryStr = this.state.queryParameter + ": " + this.state.queryOperator + this.state.queryValue;
     }
     if (this.state.queryOperator === '>=') {
-      this.state.queries[this.state.queryParameter] = ['MinType', this.state.queryValue];
+      this.state.queries[this.state.queryParameter] = ['MinType', parser("int", this.state.queryValue)];
     }
     if (this.state.queryOperator === '<=') {
-      this.state.queries[this.state.queryParameter] = ['MaxType', this.state.queryValue];
+      this.state.queries[this.state.queryParameter] = ['MaxType', parser("int", this.state.queryValue)];
     }
     if (this.state.queryOperator === 'All') {
       this.state.queries[this.state.queryParameter] = ['AllValuesType'];
       queryStr = this.state.queryParameter + ": " + this.state.queryOperator;
     }
     if (this.state.queryOperator === '=') {
-      var values = this.state.queryValue.split(",")
-      this.state.queries[this.state.queryParameter] = ['SpecificValuesType', values];
+      var values = this.state.queryValue.split(",");
+      const typeTemp = this.state.queryParameterType[0];
+      var valuesTemp = [];
+
+      values.map(value => {
+        console.log(value);
+        valuesTemp = [...valuesTemp, parser(typeTemp[1], value)];
+        console.log(valuesTemp);
+
+        // value = parser(typeTemp[1], value);
+      });
+
+      this.state.queries[this.state.queryParameter] = ['SpecificValuesType'].concat(valuesTemp);
+
+
+      // var valTemp = parser(typeTemp[1], values)
+      // values = values.map(value => {parser(typeTemp[1], value);});
+      // console.log(valTemp);
+      // this.state.queries[this.state.queryParameter] = ['SpecificValuesType', values_new];
     }
 
     this.setState({queriesForDisplay: [...this.state.queriesForDisplay, queryStr]})
@@ -163,18 +183,18 @@ class RunJobForm extends React.Component{
   }
 
   fetchModelParams(){
-    // const promise = Service.fetchModelParams(this.state.selectedModel);
-    // promise.then((data) => {
-    //   if(data !== undefined){
-    //     if (data["data"] != null){   // if there are model parameters to display
-    //         this.setState({modelParams: data["data"]});
-    //     }
-    //     else{
-    //         this.setState({modelParams: "There are no available params for the selected model..."});   // no parameters to display
-    //     }
-    //   }});
+    const promise = Service.fetchModelParams(this.state.selectedModel);
+    promise.then((data) => {
+      if(data !== undefined){
+        if (data["data"] != null){   // if there are model parameters to display
+            this.setState({modelParams: data["data"]});
+        }
+        else{
+            this.setState({modelParams: "There are no available params for the selected model..."});   // no parameters to display
+        }
+      }});
 
-    this.setState({modelParams: [["optimizer", "str"], ["metrics", "list(str)"], ["epochs", "int"]]});
+    // this.setState({modelParams: [["optimizer", "str"], ["metrics", "list(str)"], ["epochs", "int"]]});
   }
 
   submitJob(){
@@ -217,6 +237,22 @@ class RunJobForm extends React.Component{
     this.setState({jobName: {}});
     this.setState({userEmail: {}});
   }
+
+  handleParam(value){
+    this.setState({queryParameter: value});
+
+    const parametersTemp = this.state.parameters;
+    console.log(parametersTemp);
+
+    var type = parametersTemp.filter(val => {
+      console.log(val[0]);
+      if (val[0] === value) {
+        console.log(val[1]);
+        return val[1];
+      }
+    });
+    this.setState({queryParameterType: type});
+  }
   
 
   render(){
@@ -229,7 +265,7 @@ class RunJobForm extends React.Component{
           <Col column sm="6">
             <Form.Control id={param} 
                       onChange={event => {
-                      this.state.modelParamsToSend[param] = event.target.value;
+                      this.state.modelParamsToSend[param] = parser(paramType, event.target.value);
                   }}
                   type="text" placeholder="" />
             <Form.Text className="text-muted">
@@ -342,10 +378,10 @@ class RunJobForm extends React.Component{
           <Form.Group as={Row}>
             <Col>
               <Form.Control as="select" value={this.queryParameter} 
-              onChange={event => this.setState({queryParameter: event.target.value})}>
+              onChange={event => this.handleParam(event.target.value)}>
                 <option>Select Parameter</option>
                   {this.state.parameters !== null ?
-                      this.state.parameters.map(parameter => (
+                      this.state.parameters.map(([parameter, type]) => (
                       <option value={parameter}>{parameter}</option>
                       ))
                       : null
