@@ -4,6 +4,8 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import HomePage from './components/HomePage';
+import Login from './components/Login';
+import { Switch, Route } from 'react-router-dom';
 
 ReactDOM.render(
   <React.StrictMode>

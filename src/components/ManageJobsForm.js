@@ -64,32 +64,26 @@ class ManageJobsForm extends React.Component{
                            'neurons_in_layer': 150},
                 'report': {accuracy: 80, loss: 0.973}}
                 ],
-            // isJobs: false,
-            // job: {job_id: '002', 
-            //         start_time: '11:00', 
-            //         end_time: '12:00', 
-            //         status: 'PENDING', 
-            //         report: 'report object'},
+            isJobs: false,
             modalShow: false,
+            userEmail: '',
         };
-        // console.log(this.state.jobs);
-        // console.log(this.state.job);
-
-    // this.fetchJobs;
     }
 
+
     fetchJobs(){
-        //TODO - give eden "user_email" here
-        const promise = Service.fetchJobs();
+        // this.setState({isJobs: true});
+        const promise = Service.fetchJobs(this.state.userEmail);
         promise.then((data) => {
         if(data !== undefined){
             if (data["data"] != null){   // if there are jobs to display
                 this.setState({jobs: data["data"]});
-                // this.setState({isJobs: true});
+                this.setState({isJobs: true});
             }
-            // else{
-            //     this.setState({isJobs: false});   // no parameters to display
-            // }
+            else{
+                alert(data["msg"]);
+                // this.setState({isJobs: false});   // no parameters to display
+            }
         }});
     }
 
@@ -148,16 +142,14 @@ class ManageJobsForm extends React.Component{
     
 
     cancelJob(index, job_id){
-        // TODO - give eden job_id and user_email
-
-        // const promise = Service.cancelJob(job_id);
-        // promise.then((data) => {
-        // if(data !== undefined){
-        //     if (data["msg"] != null){
-        //         alert(data["msg"]);
-        //         removeJobFromTable(index, job_id);
-        //     }
-        // }});
+        const promise = Service.cancelJob(job_id, this.state.userEmail);
+        promise.then((data) => {
+        if(data !== undefined){
+            if (data["msg"] != null){
+                alert(data["msg"]);
+                this.removeJobFromTable(index, job_id);
+            }
+        }});
         
         this.removeJobFromTable(index, job_id);
     }
@@ -177,14 +169,41 @@ class ManageJobsForm extends React.Component{
         <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
             <h2>Manage Jobs</h2>
         </div>
+        <br />
+
+        <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
+        <Form>
+            <Form.Group>
+                <Row>
+                    <Col column sm="12">
+                    <Form.Label>Please enter your email address in order to fetch your jobs:</Form.Label>
+                    </Col>
+                </Row>
+                <Row>
+                <Form.Label column sm="2">Email:</Form.Label>
+                <Col column sm="10">
+                    <Form.Control onChange={event => {this.setState({userEmail: event.target.value})}} type="text" placeholder="Email" />
+                </Col>
+                </Row>
+                <br />
+
+                <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
+                    <Button variant="info" onClick={() => {this.fetchJobs()}}>Display Jobs</Button>
+                </div>
+            </Form.Group>
+        </Form>
+        </div>
+        <br />
+        <br />
+
 
         <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
             <Table striped bordered hover>
             <thead>
-                {this.renderTableHeader()}
+                {this.state.isJobs ? this.renderTableHeader() : null}
             </thead>
             <tbody>
-                {this.renderTableData()}
+                {this.state.isJobs ? this.renderTableData() : null}
             </tbody>
             </Table>
         </div>

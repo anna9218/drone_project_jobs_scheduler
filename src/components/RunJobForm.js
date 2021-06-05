@@ -19,8 +19,30 @@ import * as Service from '../services/communication';
 class RunJobForm extends React.Component{
   constructor(props) {
       super(props);
-    //   this.state={
-    //       parameters: [],
+      this.state={
+          jobName: '',
+          userEmail: '',
+          parameters: [],
+          queryParameter: '',
+          queryOperator: '=',
+          queryValue: '',
+          queriesForDisplay: [],
+          queries: {},  //{'age': ['RangeType', min_value, max_value],
+                        //'age': ['MinType', min_value],
+                        //'hour': ['MaxType', max_value],...
+                        // 'age': ['SpecificValuesType', value1, value2, ...]
+                        // 'age': ['SpecificValuesType', value1]
+                        // 'age': ['AllValuesType'] }
+          predictionVariables: ["Location"],
+          selectedPredictionVariable: '',
+          models: [],
+          selectedModel: '',
+          modelParams: [],
+          modelParamsToSend: {},
+    };
+
+    //     this.state={
+    //       parameters: ["age", "weather"],
     //       queryParameter: '',
     //       queryOperator: '=',
     //       queryValue: '',
@@ -33,34 +55,15 @@ class RunJobForm extends React.Component{
     //                     // 'age': ['SpecificValuesType', value1, value2, ...]
     //                     // 'age': ['SpecificValuesType', value1]
     //                     // 'age': ['AllValuesType'] }
-    //       models: [],
+    //       models: ["LSTM", "GRU"],
     //       selectedModel: '',
     //       modelParams: [],
     //       modelParamsToSend: {},
     //       jobName: '',
+    //       userEmail: '',
     // };
-        this.state={
-          parameters: ["age", "weather"],
-          queryParameter: '',
-          queryOperator: '=',
-          queryValue: '',
-          predictionVariables: ["Location"],
-          selectedPredictionVariable: '',
-          queriesForDisplay: [],
-          queries: {},  //{'age': ['RangeType', min_value, max_value],
-                        //'age': ['MinType', min_value],
-                        //'hour': ['MaxType', max_value],...
-                        // 'age': ['SpecificValuesType', value1, value2, ...]
-                        // 'age': ['SpecificValuesType', value1]
-                        // 'age': ['AllValuesType'] }
-          models: ["LSTM", "GRU"],
-          selectedModel: '',
-          modelParams: [],
-          modelParamsToSend: {},
-          jobName: '',
-    };
 
-    this.fetchParameters();
+    this.fetchParameters(); // parameters for building quiries
     this.fetchModelNames();
   }
 
@@ -175,8 +178,6 @@ class RunJobForm extends React.Component{
   }
 
   submitJob(){
-    // TODO - user_email + login
-
     // console.log(this.state.jobName);
     // console.log(this.state.queries);
     // console.log(this.state.selectedPredictionVariable);
@@ -184,6 +185,7 @@ class RunJobForm extends React.Component{
     // console.log(this.state.modelParamsToSend);
 
     const promise = Service.submitJob(this.state.jobName,
+                                      this.state.userEmail,
                                       this.state.queries, 
                                       this.state.selectedPredictionVariable, 
                                       this.state.selectedModel, 
@@ -203,13 +205,17 @@ class RunJobForm extends React.Component{
     this.setState({queryParameter: ''});
     this.setState({queryOperator: '='});
     this.setState({queryValue: ''});
-    this.setState({predictionVariables: ["Location"]});
-    this.setState({selectedPredictionVariable: ''});
     this.setState({queriesForDisplay: []});
     this.setState({queries: {}});
+
+    this.setState({predictionVariables: ["Location"]});
+    this.setState({selectedPredictionVariable: ''});
     this.setState({selectedModel: ''});
     this.setState({modelParams: []});
     this.setState({modelParamsToSend: {}});
+
+    this.setState({jobName: {}});
+    this.setState({userEmail: {}});
   }
   
 
@@ -258,6 +264,7 @@ class RunJobForm extends React.Component{
         <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
             <h2>Run Job</h2>
         </div>
+        <br />
 
         <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
             <h6>Here you may create a new job which will be sent to Slurm. 
@@ -267,12 +274,19 @@ class RunJobForm extends React.Component{
         <Form>
           <Form.Group>
             <Row>
-              <Form.Label column sm="9">First of all, please select a unique name for your new job:</Form.Label>
+              <Form.Label column sm="9">First of all, please select a unique name for your new job, and enter your email address:</Form.Label>
             </Row>
             <Row>
               <Form.Label column sm="3">Job name:</Form.Label>
               <Col column sm="6">
-                <Form.Control onChange={event => {this.setState({jobName: event.target.value})}} type="text" placeholder="" />
+                <Form.Control onChange={event => {this.setState({jobName: event.target.value})}} type="text" placeholder="Job name" />
+              </Col>
+            </Row>
+            <br />
+            <Row>
+              <Form.Label column sm="3">Email:</Form.Label>
+              <Col column sm="6">
+                <Form.Control onChange={event => {this.setState({userEmail: event.target.value})}} type="text" placeholder="Email" />
               </Col>
             </Row>
           </Form.Group>
@@ -362,12 +376,12 @@ class RunJobForm extends React.Component{
               <Form.Text className="text-muted">
               Enter the value.
               </Form.Text>
-              <Form.Text className="text-muted">
+              {/* <Form.Text className="text-muted">
               * For Range please enter the values in the following format: (lower_value, upper_value)
               </Form.Text>
               <Form.Text className="text-muted">
               * For equals sign (i.e. =) please enter the value\s in the following format: value1 or value1,value2,...
-              </Form.Text>
+              </Form.Text> */}
             </Col>
 
             <Col sm={1}>
