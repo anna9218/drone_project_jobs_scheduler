@@ -24,24 +24,18 @@ class Login extends React.Component{
     
 
     handleLogin(event){
-        // console.log(this.state.user_email);
-        // console.log(this.state.password);
+        // if (this.state.user_email === "" || this.state.password === "") {
+        //     alert("Fields are required");
+        //     return;
+        // }
 
-        // event.preventDefault();
-
-        if (this.state.user_email === "" || this.state.password === "") {
-            alert("Fields are required");
-            return;
-        }
-
-        const promise = Service.validateUser(this.state.user_email, this.state.password);
-        promise.then((data) => {
-        if(data !== undefined){
-            if (data["msg"] != null){   // if there are jobs to display
-                alert(data["msg"]);
-            }
-            // history.push("/");
-        }});
+        // const promise = Service.validateUser(this.state.user_email, this.state.password);
+        // promise.then((data) => {
+        // if(data !== undefined){
+        //     if (data["msg"] != null){   // if there are jobs to display
+        //         alert(data["msg"]);
+        //     }
+        // }});
     }
 
     render(){

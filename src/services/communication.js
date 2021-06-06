@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //------------------------------- REGISTER & LOGIN --------------------------------------//
-
+// NOT IMPLEMENTED - NO NEED
 // maybe no need
 // export async function register(){
 
@@ -9,21 +9,21 @@ import axios from "axios";
 
 
 // LOGIN - validate user vs bgu organization
-export async function validateUser(user_email, password){
-    var formData = new FormData();
-    formData.append("user_email", user_email);
-    formData.append("password", password);
+// export async function validateUser(user_email, password){
+//     var formData = new FormData();
+//     formData.append("user_email", user_email);
+//     formData.append("password", password);
 
 
-    return axios.post('http://localhost:5000/fetch_jobs', formData,
-    {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-            },
-    })
-    .then((response) => (response.data), (error) => {console.log(error)});
+//     return axios.post('http://localhost:5000/fetch_jobs', formData,
+//     {
+//         headers: {
+//             'Content-Type': 'multipart/form-data'
+//             },
+//     })
+//     .then((response) => (response.data), (error) => {console.log(error)});
     
-}
+// }
 
 
 //------------------------------- RUN JOBS FORM --------------------------------------//
@@ -43,6 +43,19 @@ export async function fetchModelParams(modelType){
     formData.append("model_type", modelType);
 
     return axios.post('http://localhost:5000/fetch_model_parameters', formData,
+    {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+            },
+    })
+    .then((response) => (response.data), (error) => {console.log(error)});
+}
+
+export async function fetchFlightParamValues(parameter){
+    var formData = new FormData();
+    formData.append("parameter", parameter);
+
+    return axios.post('http://localhost:5000/fetch_flight_param_values', formData,
     {
         headers: {
             'Content-Type': 'multipart/form-data'
