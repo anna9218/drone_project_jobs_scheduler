@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import HomePage from './components/HomePage';
-import { Switch, Route } from 'react-router-dom';
 
 ReactDOM.render(
   <React.StrictMode>

@@ -1,16 +1,14 @@
 import React from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Link } from 'react-router-dom';
 
-import Jumbotron from 'react-bootstrap/Jumbotron';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import IconButton from '@material-ui/core/IconButton';
-import DeleteIcon from '@material-ui/icons/Delete';
-import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
+// import IconButton from '@material-ui/core/IconButton';
+// import DeleteIcon from '@material-ui/icons/Delete';
+// import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import Card from 'react-bootstrap/Card';
 
 import * as Service from '../services/communication';
@@ -110,7 +108,7 @@ class RunJobForm extends React.Component {
    * @returns true if 'All' operator was chosen, false otherwise
    */
   isAllOperator() {
-    if (this.state.queryOperator == "All") {
+    if (this.state.queryOperator === "All") {
       return true;
     }
     return false;
@@ -322,7 +320,7 @@ class RunJobForm extends React.Component {
 
   render() {
     // the parameters fields relevant to a specific model
-    var ModelParamFields = this.state.modelParams.map(([param, paramType]) =>
+    var ModelParamFields = this.state.modelParams.map(([param, paramType, paramDefaultValue]) =>
       <div>
         <Form>
           <Form.Group as={Row}>
@@ -332,7 +330,7 @@ class RunJobForm extends React.Component {
                 onChange={event => {
                   this.state.modelParamsToSend[param] = parser(paramType, event.target.value);
                 }}
-                type="text" placeholder="" />
+                type="text" placeholder={paramDefaultValue} value={paramDefaultValue} />
               <Form.Text className="text-muted">
                 Please enter a {paramType} type.
             </Form.Text>
@@ -353,7 +351,7 @@ class RunJobForm extends React.Component {
               <Button variant="outline-info" size="sm" onClick={() => { this.removeQuery(queryString) }}>
                 Remove
               </Button>
-              <DeleteIcon />
+              {/* <DeleteIcon /> */}
             </Col>
           </Form.Group>
         </Form>
@@ -412,9 +410,42 @@ class RunJobForm extends React.Component {
               <Form.Label column sm="9">2. Select the operator. </Form.Label>
             </Row>
             <Row>
-              <Form.Label column sm="9">3. Enter the desired value according to the listed format: </Form.Label>
+              <Form.Label column sm="9">3. Select the desired value from the provided list or enter your own value: </Form.Label>
             </Row>
+            <Row>
+              <Form.Label column sm="9">Please note:</Form.Label>
+            </Row>
+
             <Container>
+              <Row>
+                <Col md={{ span: 8 }}>
+                  <Form.Label>{'\u25CF'} You can only select the [&lt;=], [&gt;=] or [Range] operators for numerical values.</Form.Label>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={{ span: 8 }}>
+                  <Form.Label>{'\u25CF'} You can only enter your own value for parameters which excpect a string value.</Form.Label>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={{ span: 4 }}>
+                  <Form.Label>{'\u25CF'} Chosen operator: [Range]</Form.Label>
+                </Col>
+                <Col md={{ span: 4 }}>
+                  <Form.Label>Format: (min_value,max_value) without spaces.</Form.Label>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={{ span: 4 }}>
+                  <Form.Label>{'\u25CF'} Chosen operator: [All]</Form.Label>
+                </Col>
+                <Col md={{ span: 5 }}>
+                  <Form.Label>All values are selected, no need to choose/enter values.</Form.Label>
+                </Col>
+              </Row>
+            </Container>
+
+            {/* <Container>
               <Row>
                 <Col md={{ span: 4 }}>
                   <Form.Label>{'\u25CF'} Chosen operator: [=]</Form.Label>
@@ -447,7 +478,7 @@ class RunJobForm extends React.Component {
                   <Form.Label>Format: none, all values are selected.</Form.Label>
                 </Col>
               </Row>
-            </Container>
+            </Container> */}
           </Form.Group>
 
 
