@@ -191,8 +191,8 @@ class RunJobForm extends React.Component {
   /**
    * Function to fetch the model specific parameters
    */
-  fetchModelParams() {
-    const promise = Service.fetchModelParams(this.state.selectedModel);
+  fetchModelParams(model) {
+    const promise = Service.fetchModelParams(model);
     promise.then((data) => {
       if (data !== undefined) {
         if (data["data"] != null) {   // if there are model parameters to display
@@ -550,7 +550,11 @@ class RunJobForm extends React.Component {
             <Form.Label column sm="3">Select model:</Form.Label>
             <Col column sm="6">
               <Form.Control as="select" value={this.queryOperator}
-                onChange={event => this.setState({ selectedModel: event.target.value })}>
+                onChange={event => {
+                this.setState({ selectedModel: event.target.value });
+                this.fetchModelParams(event.target.value);
+                }
+                }>
                 <option>Select Model</option>
                 {this.state.models !== null ?
                   this.state.models.map(model => (
@@ -564,11 +568,11 @@ class RunJobForm extends React.Component {
               </Form.Text>
             </Col>
 
-            <Col column sm="3">
+            {/* <Col column sm="3">
               <Button variant="info" size="md" onClick={() => { this.fetchModelParams() }}>
                 Fetch Model
               </Button>
-            </Col>
+            </Col> */}
           </Form.Group>
 
           <br />

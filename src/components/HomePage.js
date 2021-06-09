@@ -12,62 +12,53 @@ import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 
 
-const MenuEnum = {"run_job": 1, "manage_jobs": 2, "readme": 3}
-    
+const MenuEnum = { "run_job": 1, "manage_jobs": 2, "readme": 3 }
 
-class HomePage extends React.Component{
+
+class HomePage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             menuToShow: MenuEnum.readme,
         };
-      }
-
-    handleLogout(){
-        //TODO
     }
-    
 
-    render(){
+
+    render() {
         const isMenu = this.state.menuToShow;
         let menu;
-        if (isMenu === 1){
+        if (isMenu === 1) {
             menu = <RunJobForm />;
         }
-        if (isMenu === 2){
+        if (isMenu === 2) {
             menu = <ManageJobsForm />;
         }
-        if (isMenu === 3){
+        if (isMenu === 3) {
             menu = <Readme />;
         }
 
         return (
             <div>
-            <Navbar bg="dark" variant="dark">
-                <Navbar.Brand onClick={() => this.setState({menuToShow: MenuEnum.readme})}>Scheduler</Navbar.Brand>
-                <Nav className="mr-auto">
-                <Nav.Link onClick={() => this.setState({menuToShow: MenuEnum.run_job})}>Run Job</Nav.Link>
-                <Nav.Link onClick={() => this.setState({menuToShow: MenuEnum.manage_jobs})}>Manage Jobs</Nav.Link>
-                </Nav>
-                <Form inline>
-                <Button variant="outline-info">Logout</Button>
-                </Form>
-            </Navbar>
+                <Navbar bg="dark" variant="dark">
+                    <Navbar.Brand onClick={() => this.setState({ menuToShow: MenuEnum.readme })}>Scheduler</Navbar.Brand>
+                    <Nav className="mr-auto">
+                        <Nav.Link onClick={() => this.setState({ menuToShow: MenuEnum.run_job })}>Run Job</Nav.Link>
+                        <Nav.Link onClick={() => this.setState({ menuToShow: MenuEnum.manage_jobs })}>Manage Jobs</Nav.Link>
+                    </Nav>
+                </Navbar>
 
-            <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}>
-            <Row>{menu}</Row>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                    <Row>{menu}</Row>
+                </div>
+
             </div>
-            
-            </div>
-            );
+        );
     }
-
-
 }
 
 export default HomePage;
