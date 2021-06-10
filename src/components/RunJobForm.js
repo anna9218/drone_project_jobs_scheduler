@@ -10,6 +10,7 @@ import Button from 'react-bootstrap/Button';
 // import DeleteIcon from '@material-ui/icons/Delete';
 // import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import Card from 'react-bootstrap/Card';
+import Select from 'react-select'
 
 import * as Service from '../services/communication';
 import { parser } from './TypeParser';
@@ -36,6 +37,7 @@ class RunJobForm extends React.Component {
 
       parameters: [],
       parameterValues: [],
+      parameterValuesAsDicts: [], // in order to displat with react-select component
       queryParameter: '',
       queryParameterType: '',
       queryOperator: '=',
@@ -50,6 +52,7 @@ class RunJobForm extends React.Component {
       models: [],
       selectedModel: '',
       modelParams: [],
+      modelParamValues: {},
       modelParamsToSend: {},
     };
 
@@ -291,6 +294,17 @@ class RunJobForm extends React.Component {
       if (data !== undefined) {
         if (data["data"] != null) {
           this.setState({parameterValues: data["data"]});
+          console.log(data["data"]);
+          //todo
+          //parameterValuesAsDicts
+          var temParamList = [];
+          var parameterValuesTemp = data["data"].map((param) => {
+            var tempParam = {value: [param], label: [param]};
+            temParamList.push(tempParam);
+          }
+          );
+          this.setState({parameterValuesAsDicts: temParamList});
+          console.log(temParamList);
         }
         else {
           this.setState({parameterValues: "There are no available parameter values..." });
@@ -315,10 +329,24 @@ class RunJobForm extends React.Component {
     }
   }
 
+  handleInputParamValuesChange(option, { action }) {
+    console.log(option);
+    //TODO!!!!
+
+  }
+
 
 
 
   render() {
+    // intialize model param default values (received from the server)
+    // var modelValues = this.state.modelParams.map(([param, paramType, paramDefaultValue]) => {
+    //   // const newParamValue = {...this.state.modelParamValues[param], value: paramDefaultValue};
+    //   const newParamValue = paramDefaultValue;
+    //   this.state.modelParamValues[param] = newParamValue;
+    // }
+    // );
+
     // the parameters fields relevant to a specific model
     var ModelParamFields = this.state.modelParams.map(([param, paramType, paramDefaultValue]) =>
       <div>
@@ -329,8 +357,9 @@ class RunJobForm extends React.Component {
               <Form.Control id={param}
                 onChange={event => {
                   this.state.modelParamsToSend[param] = parser(paramType, event.target.value);
+                  // this.state.modelParamValues[param] = this.state.modelParamsToSend[param];
                 }}
-                type="text" placeholder={paramDefaultValue} value={paramDefaultValue} />
+                type="text" placeholder={paramDefaultValue} />
               <Form.Text className="text-muted">
                 Please enter a {paramType} type.
             </Form.Text>
@@ -514,7 +543,16 @@ class RunJobForm extends React.Component {
             </Col>
 
             <Col>
-              <Form.Control as="select" value={this.queryValue}
+            <Select
+              onInputChange={(event) => {this.handleInputParamValuesChange(event); }}
+              isMulti
+              name="param-values"
+              options={this.state.parameterValuesAsDicts}
+              className="basic-multi-select"
+              classNamePrefix="select"
+            />
+
+              {/* <Form.Control as="select" value={this.queryValue}
                 onChange={event => this.setState({ queryValue: event.target.value})}>
                 <option>Select Value</option>
                 {this.state.parameterValues !== null ?
@@ -523,9 +561,9 @@ class RunJobForm extends React.Component {
                   ))
                   : null
                 }
-              </Form.Control>
+              </Form.Control> */}
               <Form.Text className="text-muted">
-                Select the desired value.
+                Select the desired value\s.              
               </Form.Text>
             </Col>
 
