@@ -156,8 +156,9 @@ class ManageJobsForm extends React.Component{
 
     handleShow(model_details, report) {
         console.log(report);
-        this.setState({activeModelDetails: model_details}, {activeReport: report}
-            );
+        this.setState({activeReport: report});
+        this.setState({activeModelDetails: model_details} );
+        this.setState({modalShow: true});
     }
 
     
