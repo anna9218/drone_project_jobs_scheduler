@@ -4,9 +4,9 @@ export function parser(type, value){
 
     if (type === "int"){
         value = parseInt(value);
-        if (value===NaN) {
+        if (isNaN(value)) {
             alert("Incorrect value type entered! Expected type: int"); 
-            return;
+            return false;
         }
         return value;     
     }

@@ -39,23 +39,23 @@ class ManageJobsForm extends React.Component{
         super(props);
         this.state = {
             jobs: [
-                {'job_id': '001', 'start_time': '10:00', 'end_time': '11:00', 'status': 'COMPLETED', 
+                {'job_id': '001', 'job_name': "jobA", 'start_time': '10:00', 'end_time': '11:00', 'status': 'COMPLETED', 
                 'model_details': {'optimizer': "adagrad",
                            'metrics': ["accuracy"],
                            'iterations': 10,
                            'batch_size': 32,
                            'epochs': 100,
                            'neurons_in_layer': 100},
-                'report': {accuracy: 80, loss: 0.43}},
-                {'job_id': '102', 'start_time': '11:00', 'end_time': '12:00', 'status': 'PENDING', 
+                'report': {accuracy: 10, loss: 0.43}},
+                {'job_id': '102', 'job_name': "jobB", 'start_time': '11:00', 'end_time': '12:00', 'status': 'COMPLETED', 
                 'model_details': {'optimizer': "adam",
                            'metrics': ["accuracy", "recall", "precision"],
                            'iterations': 30,
                            'batch_size': 64,
                            'epochs': 500,
                            'neurons_in_layer': 200},
-                'report': {accuracy: 80, loss: 1.28}},
-                {'job_id': '456', 'start_time': '11:00', 'end_time': '12:00', 'status': 'RUNNING', 
+                'report': {accuracy: 20, loss: 1.28}},
+                {'job_id': '456', 'job_name': "jobC", 'start_time': '11:00', 'end_time': '12:00', 'status': 'COMPLETED', 
                 'model_details': {'optimizer': "adagrad",
                            'metrics': ["accuracy", "precision"],
                            'iterations': 20,
@@ -67,31 +67,42 @@ class ManageJobsForm extends React.Component{
             isJobs: false,
             modalShow: false,
             userEmail: '',
+            activeModelDetails: {},
+            activeReport: {},
         };
     }
 
 
+    /**
+     * Function to fetch jobs info from the server.
+     */
     fetchJobs(){
-        // this.setState({isJobs: true});
-        const promise = Service.fetchJobs(this.state.userEmail);
-        promise.then((data) => {
-        if(data !== undefined){
-            if (data["data"] != null){   // if there are jobs to display
-                this.setState({jobs: data["data"]});
-                this.setState({isJobs: true});
-            }
-            else{
-                alert(data["msg"]);
-                // this.setState({isJobs: false});   // no parameters to display
-            }
-        }});
+        this.setState({isJobs: true});
+        // const promise = Service.fetchJobs(this.state.userEmail);
+
+        // promise.then((data) => {
+        // if(data !== undefined){
+        //     if (data["data"] != null && Array.isArray(data["data"]) && data["data"].length > 0){   // if there are jobs to display
+        //         this.setState({jobs: data["data"]});
+        //         this.setState({isJobs: true});
+        //     }
+        //     else{
+        //         alert(data["msg"]);
+        //         this.setState({isJobs: false});  // no jobs to display
+        //     }
+        // }
+        // else {
+        //     alert("Connection error with the server, response is undefined");
+        // }});
     }
+
 
     renderTableHeader(){
         return (            
             <tr>
                 <th>#</th>
                 <th>Job ID</th>
+                <th>Job Name</th>
                 <th>Start Time</th>
                 <th>End Time</th>
                 <th>Status</th>
@@ -101,33 +112,36 @@ class ManageJobsForm extends React.Component{
         );
     }
 
+
     renderTableData(){
         var tableIdx = 0;
         return this.state.jobs.map((job, index) => {
-            const {job_id, start_time, end_time, status, model_details, report} = job; //destructuring
+            const {job_id, job_name, start_time, end_time, status, model_details, report} = job; //destructuring
             tableIdx +=1;
             var isCancelable = (status === "PENDING" || status === "RUNNING") ? true : false;
             var isReport = (status === "COMPLETED") ? true : false;
             var reportText = (isReport) ? "Click for Report" : "No Report";
+            
+
             return (
                 <tr key={job_id}>
                     <td>{tableIdx}</td>
                     <td>{job_id}</td>
+                    <td>{job_name}</td>
                     <td>{start_time}</td>
                     <td>{end_time}</td>
                     <td>{status}</td>
                     <td>
-                        {/* <Button disabled={!isReport} variant='outline-info' onClick={()=> window.open("report"+job_id, "_blank")}> */}
                         <Button disabled={!isReport} variant='outline-info' 
-                        onClick={() => this.setState({modalShow: true})}>
+                        onClick={() => this.handleShow(model_details, report)}>
                             {reportText}
                         </Button>
-                        <Report
+                        {/* <Report
                             modelDetails={model_details}
                             reportData={report}
                             show={this.state.modalShow}
                             onHide={() => this.setState({modalShow: false})}
-                        />
+                        /> */}
                     </td>
                     <td>
                         <Button disabled={!isCancelable} variant='outline-info' onClick={()=>{this.cancelJob(index, job_id)}}>
@@ -139,8 +153,19 @@ class ManageJobsForm extends React.Component{
         });
     }
 
-    
 
+    handleShow(model_details, report) {
+        console.log(report);
+        this.setState({activeModelDetails: model_details}, {activeReport: report}
+            );
+    }
+
+    
+    /**
+     * Function to cancel a selected job. Only "RUNNING", "PENDING" jobs can be cancelled.
+     * @param {Int} index 
+     * @param {Int} job_id 
+     */
     cancelJob(index, job_id){
         const promise = Service.cancelJob(job_id, this.state.userEmail);
         promise.then((data) => {
@@ -154,6 +179,7 @@ class ManageJobsForm extends React.Component{
         this.removeJobFromTable(index, job_id);
     }
 
+
     removeJobFromTable(index, job_id){
         var jobs_1 = this.state.jobs;
         var job = jobs_1[index];
@@ -162,6 +188,7 @@ class ManageJobsForm extends React.Component{
             this.setState({jobs: jobs_1});
         }
     }
+
 
     render(){
         return(
@@ -190,6 +217,7 @@ class ManageJobsForm extends React.Component{
                 <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
                     <Button variant="info" onClick={() => {this.fetchJobs()}}>Display Jobs</Button>
                 </div>
+
             </Form.Group>
         </Form>
         </div>
@@ -206,6 +234,13 @@ class ManageJobsForm extends React.Component{
                 {this.state.isJobs ? this.renderTableData() : null}
             </tbody>
             </Table>
+
+            <Report
+                modelDetails={this.state.activeModelDetails}
+                reportData={this.state.activeReport}
+                show={this.state.modalShow}
+                onHide={() => this.setState({modalShow: false})}
+            />
         </div>
 
         </div>

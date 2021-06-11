@@ -39,6 +39,10 @@ function renderJobData(reportData){
 function renderModelData(modelDetails){
   console.log(modelDetails);
 
+  if (Object.keys(modelDetails).length === 0) {
+    return;
+  }
+
   
 
   const metrics = modelDetails['metrics'];

@@ -29,15 +29,19 @@ import { parser } from './TypeParser';
 
 
 class RunJobForm extends React.Component {
+  selectRef = null;
+
   constructor(props) {
     super(props);
     this.state = {
       jobName: '',
       userEmail: '',
 
-      parameters: [],
-      parameterValues: [],
-      parameterValuesAsDicts: [], // in order to displat with react-select component
+      parameters: [], // list of all parameters, they are fetched from the server. [[param, type], ...]
+      parameterValues: [],  // list of all possible values, of the selected parameter. [value1, value2, ...]
+      parameterValuesAsDicts: [], // dicts in order to display with react-select component (it excpects dictionary values).
+      parameterSelectedValues: [], // list of dicts of the selected values, of the selected parameter. [value1, value2, ...]
+
       queryParameter: '',
       queryParameterType: '',
       queryOperator: '=',
@@ -117,25 +121,98 @@ class RunJobForm extends React.Component {
     return false;
   }
 
+  isNumericParam() {
+    return (this.state.queryParameterType === "int") ? true : false;
+  }
+
+  isStringParam() {
+    return (this.state.queryParameterType === "str") ? true : false;
+  }
+
 
   /**
    * Function to add queries constructed by the user to the component's state.
    */
   addQuery() {
-    // TODO - ADD HANDLING FOR INPUT ERRORS ?
-    var queryStr = this.state.queryParameter + this.state.queryOperator + this.state.queryValue;
+    // 1.1. check if a query with the same parametes was already added -> if so, display error msg, don't add it//
+    var existingParameters = Object.keys(this.state.queries);
+    console.log(this.state.queries);
 
-    if (this.state.queryOperator === 'Range') {
-      this.state.queries[this.state.queryParameter] = ['RangeType', parser("int", this.state.queryValue)];
-      queryStr = this.state.queryParameter + ": " + this.state.queryOperator + this.state.queryValue;
+    console.log(existingParameters);
+    if (existingParameters.indexOf(this.state.queryParameter) > -1) {
+      alert("You've already added a query with the same parameter! You can remove the existing query and add a new one with both values.");
+      
+      this.setState({parameterSelectedValues: []});
+      this.selectRef.select.clearValue();
+      return;
     }
 
+
+    // 1.2. check if no values were selected - if so, display error msg, don't add it //
+    const values_ = this.state.parameterSelectedValues;
+    
+    if (this.state.queryOperator!=="Range" && this.state.queryOperator!=="All" && values_.length < 1) {
+      alert("No values were chosen! Please select values.");
+      return;
+    }
+
+
+    // handle RANGE first since its different, and return //
+    if (this.state.queryOperator === 'Range') {
+      const valueRange = this.state.queryValue;
+      var valueRange_ = valueRange.slice(1,-1); // remove ()
+      var valueRangeArray = valueRange_.split(",");
+      var valueRangeParsed = valueRangeArray.map(value => parser("int", value));
+      console.log(valueRangeParsed);
+      if (valueRangeParsed.includes(false)) { 
+        this.setState({queryValue: ""});
+        return; 
+      }
+      else {
+
+      this.state.queries[this.state.queryParameter] = ['RangeType'].concat(valueRangeParsed);
+      queryStr = this.state.queryParameter + ": " + this.state.queryOperator + this.state.queryValue;
+
+      // handle adding queries for display, and add corresponding target variable //
+      this.setState({ queriesForDisplay: [...this.state.queriesForDisplay, queryStr] })
+      this.setState({ predictionVariables: [...this.state.predictionVariables, this.state.queryParameter] });
+
+      return;
+      }
+    }
+
+
+
+
+    // 2. handle values - extract all values from their dict objects, and concatenate together into a list //
+    var valuesTemp = [];  // will be [value1, value2, ...]
+
+    // check if single or multiple values and handle accordingly
+    if (!Array.isArray(values_)) {
+      valuesTemp.push(values_.value);
+    }
+    else {
+      values_.map((dictObject) => valuesTemp.push(dictObject.value));
+    }
+    console.log(valuesTemp);
+
+
+    // var queryStr = this.state.queryParameter + this.state.queryOperator + this.state.queryValue;
+    var queryStr = "";
+
+    // 3. handle the input for each parameter separately - construct queryStr for display, and add query to queries dict// 
+
+
     if (this.state.queryOperator === '>=') {
-      this.state.queries[this.state.queryParameter] = ['MinType', parser("int", this.state.queryValue)];
+      this.state.queries[this.state.queryParameter] = ['MinType'].concat(valuesTemp);
+      queryStr = this.state.queryParameter + this.state.queryOperator + valuesTemp[0];
+      // this.state.queries[this.state.queryParameter] = ['MinType', parser("int", this.state.queryValue)];
     }
 
     if (this.state.queryOperator === '<=') {
-      this.state.queries[this.state.queryParameter] = ['MaxType', parser("int", this.state.queryValue)];
+      this.state.queries[this.state.queryParameter] = ['MaxType'].concat(valuesTemp);
+      queryStr = this.state.queryParameter + this.state.queryOperator + valuesTemp[0];
+      // this.state.queries[this.state.queryParameter] = ['MaxType', parser("int", this.state.queryValue)];
     }
 
     if (this.state.queryOperator === 'All') {
@@ -143,24 +220,34 @@ class RunJobForm extends React.Component {
       queryStr = this.state.queryParameter + ": " + this.state.queryOperator;
     }
 
-    // create array with all input value, and update their type accordingly
     if (this.state.queryOperator === '=') {
-      var values = this.state.queryValue.split(",");
-      const typeTemp = this.state.queryParameterType;
 
-      var valuesTemp = [];
-      values.map(value => {
-        valuesTemp = [...valuesTemp, parser(typeTemp, value)];
-      });
+      // 1. handle query display - queryStr //
+      var valuesStr = "";
 
+      if (this.state.queryParameterType === "int") {
+        valuesTemp.map((value) => valuesStr += value.toString() + ", ");
+      }
+      else {
+        valuesTemp.map((value) => valuesStr += value + ", ");
+      }
+      valuesStr = valuesStr.slice(0, -2); // remove last ", " that was added in map
+      queryStr = this.state.queryParameter + this.state.queryOperator + valuesStr;
+
+
+      // 2. handle adding queries to queries dict //
       this.state.queries[this.state.queryParameter] = ['SpecificValuesType'].concat(valuesTemp);
+      console.log(this.state.queries);
+
     }
 
+    // 4. handle adding queries for display, and add corresponding target variable //
     this.setState({ queriesForDisplay: [...this.state.queriesForDisplay, queryStr] })
     this.setState({ predictionVariables: [...this.state.predictionVariables, this.state.queryParameter] });
-    // console.log(this.state.predictionVariables);
-    // console.log(this.state.queriesForDisplay);
-    // console.log(this.state.queries);
+
+    // 5. reset parameter value, and clear the select field in display //
+    this.setState({parameterSelectedValues: []});
+    this.selectRef.select.clearValue();
   }
 
 
@@ -175,16 +262,18 @@ class RunJobForm extends React.Component {
     queries.splice(index, 1);
     this.setState({ queriesForDisplay: queries });
 
+
     // remove target variable
     var predictionVars = this.state.predictionVariables;
-    var parameter = query.split(/:|=/)[0];
+    var parameter = query.split(/:|=|<|>/)[0];
     const indexPar = predictionVars.indexOf(parameter);
     predictionVars.splice(indexPar, 1);
     this.setState({ predictionVariables: predictionVars });
 
+
     // remove query from queries to send 
-    var queriesDict = this.state.queries
-    delete queriesDict[parameter]
+    var queriesDict = this.state.queries;
+    delete queriesDict[parameter];
     this.setState({ queries: queriesDict });
   }
 
@@ -274,19 +363,22 @@ class RunJobForm extends React.Component {
    */
   handleParam(value) {
     this.setState({ queryParameter: value });
+    this.setState({});
 
     const parametersTemp = this.state.parameters;
     var typeTemp;
 
     parametersTemp.filter(val => {
-      console.log(val[0]);
       if (val[0] === value) {
-        console.log(val[1]);
         typeTemp = val[1];
         return val[1];
       }
     });
     this.setState({ queryParameterType: typeTemp });
+
+    // reset parameter value, and clear the select field in display //
+    this.setState({parameterSelectedValues: []});
+    this.selectRef.select.clearValue();
 
 
     const promise = Service.fetchFlightParamValues(value);
@@ -294,18 +386,15 @@ class RunJobForm extends React.Component {
       if (data !== undefined) {
         if (data["data"] != null) {
           this.setState({parameterValues: data["data"]});
-          console.log(data["data"]);
-          //todo
-          //parameterValuesAsDicts
+
           var temParamList = [];
           var parameterValuesTemp = data["data"].map((param) => {
-            var tempParam = {value: [param], label: [param]};
+            var tempParam = {value: param, label: param};
             temParamList.push(tempParam);
-          }
-          );
+          });
           this.setState({parameterValuesAsDicts: temParamList});
-          console.log(temParamList);
         }
+
         else {
           this.setState({parameterValues: "There are no available parameter values..." });
         }
@@ -329,10 +418,19 @@ class RunJobForm extends React.Component {
     }
   }
 
-  handleInputParamValuesChange(option, { action }) {
-    console.log(option);
-    //TODO!!!!
 
+  handleInputParamValuesChange(option, { action }) {
+    // option is of the following format: [{label: 34, value: 34}, {label: 55, value: 55}]
+    // possible actions - select-option, clear, remove-value
+
+    console.log(option, action);
+    if (action==="clear") { 
+      this.setState({parameterSelectedValues: []});
+
+    }
+    else {
+      this.setState({parameterSelectedValues: option});
+    }
   }
 
 
@@ -380,7 +478,6 @@ class RunJobForm extends React.Component {
               <Button variant="outline-info" size="sm" onClick={() => { this.removeQuery(queryString) }}>
                 Remove
               </Button>
-              {/* <DeleteIcon /> */}
             </Col>
           </Form.Group>
         </Form>
@@ -453,7 +550,7 @@ class RunJobForm extends React.Component {
               </Row>
               <Row>
                 <Col md={{ span: 8 }}>
-                  <Form.Label>{'\u25CF'} You can only enter your own value for parameters which excpect a string value.</Form.Label>
+                  <Form.Label>{'\u25CF'} You can only enter your own value for [Range] parameter.</Form.Label>
                 </Col>
               </Row>
               <Row>
@@ -510,7 +607,8 @@ class RunJobForm extends React.Component {
             </Container> */}
           </Form.Group>
 
-
+          
+          {/* QUERY FILEDS ROW - parameter, operator, value choice */}
           <Form.Group as={Row}>
             <Col>
               <Form.Control as="select" value={this.queryParameter}
@@ -532,9 +630,9 @@ class RunJobForm extends React.Component {
               <Form.Control as="select" value={this.queryOperator}
                 onChange={event => this.setState({ queryOperator: event.target.value })}>
                 <option value={'='}> {'='} </option>
-                <option value={'<='}> {'<='} </option>
-                <option value={'>='}> {'>='} </option>
-                <option value={'Range'}> {'Range'} </option>
+                <option disabled={this.isStringParam()} value={'<='}> {'<='} </option>
+                <option disabled={this.isStringParam()} value={'>='}> {'>='} </option>
+                <option disabled={this.isStringParam()} value={'Range'}> {'Range'} </option>
                 <option value={'All'}> {'All'} </option>
               </Form.Control>
               <Form.Text className="text-muted">
@@ -543,14 +641,25 @@ class RunJobForm extends React.Component {
             </Col>
 
             <Col>
+            { (this.state.queryOperator === "Range")
+            ?
+            <Form.Control 
+            type="text" placeholder="" disabled={this.isAllOperator()} value={this.isAllOperator() ? "" : this.state.queryValue}
+            onChange={event => this.setState({queryValue: event.target.value})}/>
+            :
             <Select
-              onInputChange={(event) => {this.handleInputParamValuesChange(event); }}
-              isMulti
+              ref={ref => {
+                this.selectRef = ref;
+              }}
+              isDisabled={this.isAllOperator()}
+              onChange={(option, { action }) => {this.handleInputParamValuesChange(option, { action }); }}
+              isMulti={this.state.queryOperator==='='}
               name="param-values"
               options={this.state.parameterValuesAsDicts}
               className="basic-multi-select"
               classNamePrefix="select"
             />
+            }
 
               {/* <Form.Control as="select" value={this.queryValue}
                 onChange={event => this.setState({ queryValue: event.target.value})}>
