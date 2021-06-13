@@ -18,22 +18,32 @@ import Form from 'react-bootstrap/Form';
 
 function renderJobData(reportData){
   console.log(reportData);
-
-
-  var keys = Object.keys(reportData);
-  var Fields = keys.map((key, index) =>
-    <div>
+  var data = 
+  <div>
     <Form>
-      <Form.Group as={Row}>
-        <Form.Label column sm="3">{key}: {reportData[key]}</Form.Label>
-      </Form.Group>
+     <Form.Group as={Row}>
+         <Form.Label column sm="3">{reportData}</Form.Label>
+     </Form.Group>
     </Form>
   </div>
-  );
 
-  console.log(Fields);
+  return data;
 
-  return Fields;
+
+  // var keys = Object.keys(reportData);
+  // var Fields = keys.map((key, index) =>
+  //   <div>
+  //   <Form>
+  //     <Form.Group as={Row}>
+  //       <Form.Label column sm="3">{key}: {reportData[key]}</Form.Label>
+  //     </Form.Group>
+  //   </Form>
+  // </div>
+  // );
+
+  // console.log(Fields);
+
+  // return Fields;
 }
 
 function renderModelData(modelDetails){

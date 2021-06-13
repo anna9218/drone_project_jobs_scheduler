@@ -1,7 +1,7 @@
 import axios from "axios";
-// var ip = "132.72.67.188";   // IP of the university's server 
-var ip = "localhost"
-var port = "8020";  // Application port
+var ip = "132.72.67.188";   // IP of the university's server 
+// var ip = "localhost"
+var port = "8022";  // Application port
 
 
 //------------------------------- RUN JOBS FORM --------------------------------------//

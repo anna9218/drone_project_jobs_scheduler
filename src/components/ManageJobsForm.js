@@ -77,23 +77,24 @@ class ManageJobsForm extends React.Component{
      * Function to fetch jobs info from the server.
      */
     fetchJobs(){
-        this.setState({isJobs: true});
-        // const promise = Service.fetchJobs(this.state.userEmail);
+        // this.setState({isJobs: true});
 
-        // promise.then((data) => {
-        // if(data !== undefined){
-        //     if (data["data"] != null && Array.isArray(data["data"]) && data["data"].length > 0){   // if there are jobs to display
-        //         this.setState({jobs: data["data"]});
-        //         this.setState({isJobs: true});
-        //     }
-        //     else{
-        //         alert(data["msg"]);
-        //         this.setState({isJobs: false});  // no jobs to display
-        //     }
-        // }
-        // else {
-        //     alert("Connection error with the server, response is undefined");
-        // }});
+        const promise = Service.fetchJobs(this.state.userEmail);
+        promise.then((data) => {
+
+        if(data !== undefined){
+            if (data["data"] != null && Array.isArray(data["data"]) && data["data"].length > 0){   // if there are jobs to display
+                this.setState({jobs: data["data"]});
+                this.setState({isJobs: true});
+            }
+            else{
+                alert(data["msg"]);
+                this.setState({isJobs: false});  // no jobs to display
+            }
+        }
+        else {
+            alert("Connection error with the server, response is undefined");
+        }});
     }
 
 
@@ -116,10 +117,11 @@ class ManageJobsForm extends React.Component{
     renderTableData(){
         var tableIdx = 0;
         return this.state.jobs.map((job, index) => {
-            const {job_id, job_name, start_time, end_time, status, model_details, report} = job; //destructuring
+            const {job_id, job_name_by_user, start_time, end_time, status, model_details, report} = job; //destructuring
             tableIdx +=1;
             var isCancelable = (status === "PENDING" || status === "RUNNING") ? true : false;
-            var isReport = (status === "COMPLETED") ? true : false;
+            // TODO - check how slurm types "CANCELED"
+            var isReport = (status === "PENDING" || status === "CANCELED" || status === "CANCELLED" || status === "CANCELED+"|| status === "RUNNING") ? false : true;
             var reportText = (isReport) ? "Click for Report" : "No Report";
             
 
@@ -127,7 +129,7 @@ class ManageJobsForm extends React.Component{
                 <tr key={job_id}>
                     <td>{tableIdx}</td>
                     <td>{job_id}</td>
-                    <td>{job_name}</td>
+                    <td>{job_name_by_user}</td>
                     <td>{start_time}</td>
                     <td>{end_time}</td>
                     <td>{status}</td>
