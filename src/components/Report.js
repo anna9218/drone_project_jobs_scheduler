@@ -89,9 +89,6 @@ function renderModelData(modelDetails){
 
 function Report(props) {
 
-  
-    // console.log(this.props);
-
     return (
       <Modal
         {...props}

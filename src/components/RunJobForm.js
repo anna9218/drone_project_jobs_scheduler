@@ -128,15 +128,13 @@ class RunJobForm extends React.Component {
   }
 
 
+
   /**
    * Function to add queries constructed by the user to the component's state.
    */
   addQuery() {
     // 1.1. check if a query with the same parametes was already added -> if so, display error msg, don't add it//
     var existingParameters = Object.keys(this.state.queries);
-    console.log(this.state.queries);
-
-    console.log(existingParameters);
     if (existingParameters.indexOf(this.state.queryParameter) > -1) {
       alert("You've already added a query with the same parameter! You can remove the existing query and add a new one with both values.");
       
@@ -297,20 +295,55 @@ class RunJobForm extends React.Component {
   }
 
 
+  checkInputNotEmpty(){
+    // check empty inputs
+    const modelParamsToSend_ = this.state.modelParamsToSend;
+    const queries_ = this.state.queries;
+
+    if (this.state.jobName === "" || 
+    this.state.userEmail === "" || 
+    this.state.selectedPredictionVariable === "" || 
+    this.state.selectedModel === "" || 
+    (Object.keys(modelParamsToSend_).length === 0 && modelParamsToSend_.constructor === Object) ||
+    (Object.keys(queries_).length === 0 && queries_.constructor === Object)) 
+    {
+      return false;
+    }
+    return true;
+  }
+
+  checkModelParamValuesNotEmpty() {
+    const modelParamsToSend_ = this.state.modelParamsToSend;
+    console.log(modelParamsToSend_);
+
+    var paramTypeDict = {};
+    this.state.modelParams.map(([param, paramType, paramDefaultValue]) => { paramTypeDict[param] = paramType; });
+
+    var existingModelParameters = Object.keys(modelParamsToSend_);
+    if (existingModelParameters.length === 0) { return false; }
+
+    var isValidValue = true;
+    existingModelParameters.map(param => { if (paramTypeDict[param] === "int" && modelParamsToSend_[param] < 1) { isValidValue = false; }});
+    if (!isValidValue) { return false; }
+
+    return true;
+  }
+
   /**
-   * Function to submit all collected values and params to the server, in order to create and run a new job
+   * Function to submit all collected values and parameters to the server, to create and run a new job
    * Checks in the input is valid
    */
   submitJob() {
-    // TODO - check input
-    console.log(this.state.queries);
-    if (this.state.jobName === "" || this.state.userEmail === "" || 
-    this.state.queries.length === 0 || this.state.selectedPredictionVariable === "" || 
-    this.state.selectedModel === "" || this.state.modelParamsToSend.length === 0) {
+    // check empty inputs
+    if (!this.checkInputNotEmpty()) {
       alert("Oops, some values are missing! Please insert the missing values");
-      return;
+      return false;
     }
 
+    if (!this.checkModelParamValuesNotEmpty()) {
+      alert("Oops, some model values are empty or invalid! Please insert correct values");
+      return false;
+    }
 
 
     const promise = Service.submitJob(this.state.jobName,
@@ -338,10 +371,18 @@ class RunJobForm extends React.Component {
    * Function to reset all collected fields' values
    */
   resetForm() {
-    // TODO - verify all
+    this.setState({ jobName: '' });
+    this.setState({ userEmail: '' });
+
+    this.setState({ parameterValues: [] });
+    this.setState({ parameterValuesAsDicts: [] });
+    this.setState({ parameterSelectedValues: [] });
+
     this.setState({ queryParameter: '' });
+    this.setState({ queryParameterType: '' });
     this.setState({ queryOperator: '=' });
     this.setState({ queryValue: '' });
+    
     this.setState({ queriesForDisplay: [] });
     this.setState({ queries: {} });
 
@@ -350,9 +391,6 @@ class RunJobForm extends React.Component {
     this.setState({ selectedModel: '' });
     this.setState({ modelParams: [] });
     this.setState({ modelParamsToSend: {} });
-
-    this.setState({ jobName: {} });
-    this.setState({ userEmail: {} });
   }
 
 
@@ -381,7 +419,15 @@ class RunJobForm extends React.Component {
     this.setState({parameterSelectedValues: []});
     this.selectRef.select.clearValue();
 
+    // fetch the parameter's coresponding values from the server //
+    this.fetchParamValues(value);    
+  }
 
+
+  /**
+   * Function to feth the selected parametere's values
+   */
+  fetchParamValues(value) {
     // fetch the parameter's coresponding values from the server //
     const promise = Service.fetchFlightParamValues(value);
     promise.then((data) => {
@@ -405,7 +451,9 @@ class RunJobForm extends React.Component {
         alert("Connection error with the server, response is undefined");
       }
     });
+
   }
+
 
   handleEmailInput(email) {
     let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -421,7 +469,7 @@ class RunJobForm extends React.Component {
   }
 
   /**
-   * 
+   * Function to handle the react-select input of parameter values
    * @param {List of objects {label:_, value:_}} option 
    * @param {String} action 
    */
@@ -432,7 +480,6 @@ class RunJobForm extends React.Component {
     console.log(option, action);
     if (action==="clear") { 
       this.setState({parameterSelectedValues: []});
-
     }
     else {
       this.setState({parameterSelectedValues: option});
@@ -443,13 +490,6 @@ class RunJobForm extends React.Component {
 
 
   render() {
-    // intialize model param default values (received from the server)
-    // var modelValues = this.state.modelParams.map(([param, paramType, paramDefaultValue]) => {
-    //   // const newParamValue = {...this.state.modelParamValues[param], value: paramDefaultValue};
-    //   const newParamValue = paramDefaultValue;
-    //   this.state.modelParamValues[param] = newParamValue;
-    // }
-    // );
 
     // the parameters fields relevant to a specific model
     var ModelParamFields = this.state.modelParams.map(([param, paramType, paramDefaultValue]) =>
@@ -464,9 +504,16 @@ class RunJobForm extends React.Component {
                   // this.state.modelParamValues[param] = this.state.modelParamsToSend[param];
                 }}
                 type="text" placeholder={paramDefaultValue} />
+              
+              { (paramType === "list") ?
               <Form.Text className="text-muted">
-                Please enter a {paramType} type.
-            </Form.Text>
+                Please enter the metrics values separated by commas.
+              </Form.Text>
+              :
+              <Form.Text className="text-muted">
+                  Please enter a {paramType} type.
+              </Form.Text> }
+
             </Col>
           </Form.Group>
         </Form>

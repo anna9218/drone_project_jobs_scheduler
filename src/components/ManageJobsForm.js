@@ -77,7 +77,10 @@ class ManageJobsForm extends React.Component{
      * Function to fetch jobs info from the server.
      */
     fetchJobs(){
-        // this.setState({isJobs: true});
+        if (!this.handleEmailInput()) {
+            alert("Oops, the email is invalid! Please re-enter");
+            return;
+        }
 
         const promise = Service.fetchJobs(this.state.userEmail);
         promise.then((data) => {
@@ -95,6 +98,21 @@ class ManageJobsForm extends React.Component{
         else {
             alert("Connection error with the server, response is undefined");
         }});
+    }
+
+
+    handleEmailInput() {
+        const email = this.state.userEmail;
+        let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        console.log(email);
+        if (re.test(email)) {
+            // this is a valid email address
+            return true; 
+        }
+        else {
+            // invalid email, show an error to the user.
+            return false;
+        }
     }
 
 
@@ -193,6 +211,10 @@ class ManageJobsForm extends React.Component{
     }
 
 
+
+
+
+
     render(){
         return(
         <div>
@@ -212,7 +234,7 @@ class ManageJobsForm extends React.Component{
                 <Row>
                 <Form.Label column sm="2">Email:</Form.Label>
                 <Col column sm="10">
-                    <Form.Control onChange={event => {this.setState({userEmail: event.target.value})}} type="text" placeholder="Email" />
+                    <Form.Control onChange={event => {this.setState({userEmail: event.target.value})}} type="text" placeholder="Email"/>
                 </Col>
                 </Row>
                 <br />

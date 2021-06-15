@@ -4,6 +4,7 @@
 // Adding New Types:
 // You can add your own parsing option by adding an if statement.
 
+
 export function parser(type, value){  
     console.log(type);
     console.log(value);
@@ -21,8 +22,11 @@ export function parser(type, value){
     if (type === "str"){
         return value;
     }
+    
     if (type === "list"){
-        return value.split(',');
+        var result = value.split(',');
+        var resultTrimmed = result.map((metric) => metric.trim());
+        return resultTrimmed;
     }
 
     ////////////////////////////////////////////////////////////
