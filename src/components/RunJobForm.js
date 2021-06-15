@@ -401,7 +401,7 @@ class RunJobForm extends React.Component {
    */
   handleParam(value) {
     this.setState({ queryParameter: value });
-    this.setState({});
+    this.setState({queryValue: ''});
 
     // find out the parameter's type //
     const parametersTemp = this.state.parameters;
@@ -416,9 +416,14 @@ class RunJobForm extends React.Component {
     this.setState({ queryParameterType: typeTemp });
 
     // reset parameter value, and clear the select field in display //
-    this.setState({parameterSelectedValues: []});
-    this.selectRef.select.clearValue();
+    if (this.state.queryOperator !== "Range") {
+      this.setState({parameterSelectedValues: []});
+      this.selectRef.select.clearValue();
+    }
 
+    // reset operator to default
+    this.setState({queryOperator: '='});
+    
     // fetch the parameter's coresponding values from the server //
     this.fetchParamValues(value);    
   }
@@ -523,10 +528,10 @@ class RunJobForm extends React.Component {
 
     // the displayed queries defined by the user
     var QueriesList = this.state.queriesForDisplay.map((queryString) =>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div >
         <Form inline>
           <Form.Group as={Row}>
-            <Form.Label sm="4">{queryString}</Form.Label>
+            <Form.Label sm="8">{queryString}</Form.Label>
             <Col>
               <Button variant="outline-info" size="sm" onClick={() => { this.removeQuery(queryString) }}>
                 Remove
@@ -539,11 +544,12 @@ class RunJobForm extends React.Component {
 
 
     return (
-      <div style={{ marginRight: "5%", marginLeft: "5%", marginBottom: "3%" }}>
+      <div style={{ marginRight: "1%", marginLeft: "1%", marginBottom: "3%" }}>
         <div style={{ marginTop: "1%", display: "flex", justifyContent: "center", alignItems: "center" }}>
           <h2>Run Job</h2>
         </div>
         <br />
+        <Container>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
           <h6>Here you may create a new job which will be sent to Slurm.
@@ -650,7 +656,7 @@ class RunJobForm extends React.Component {
             </Col>
 
             <Col sm={3}>
-              <Form.Control as="select" value={this.queryOperator}
+              <Form.Control as="select" value={this.state.queryOperator}
                 onChange={event => this.setState({ queryOperator: event.target.value })}>
                 <option value={'='}> {'='} </option>
                 <option disabled={this.isStringParam()} value={'<='}> {'<='} </option>
@@ -786,6 +792,7 @@ class RunJobForm extends React.Component {
           </div>
 
         </Form>
+        </Container>
       </div>
 
     );
