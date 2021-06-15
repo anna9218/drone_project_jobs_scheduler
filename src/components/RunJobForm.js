@@ -15,17 +15,15 @@ import Select from 'react-select'
 import * as Service from '../services/communication';
 import { parser } from './TypeParser';
 
-
-// POSSIBLE QUERIES - HOW THEY ARE CONSTRUCTED:
-// {'age': ['RangeType', min_value, max_value],
-// 'age': ['MinType', min_value],
-// 'hour': ['MaxType', max_value],...
-// 'age': ['SpecificValuesType', value1, value2, ...]
-// 'age': ['SpecificValuesType', value1]
-// 'age': ['AllValuesType'] }
-
-
-// TODO - for queries, for param of type str -> disable >= <= range
+////////////////////////////////////////////////////////
+// POSSIBLE QUERIES - HOW THEY ARE CONSTRUCTED:       //
+// {'age': ['RangeType', min_value, max_value],       //
+// 'age': ['MinType', min_value],                     //
+// 'hour': ['MaxType', max_value],...                 //
+// 'age': ['SpecificValuesType', value1, value2, ...] //
+// 'age': ['SpecificValuesType', value1]              //
+// 'age': ['AllValuesType'] }                         //
+////////////////////////////////////////////////////////
 
 
 class RunJobForm extends React.Component {
@@ -42,22 +40,22 @@ class RunJobForm extends React.Component {
       parameterValuesAsDicts: [], // dicts in order to display with react-select component (it excpects dictionary values).
       parameterSelectedValues: [], // list of dicts of the selected values, of the selected parameter. [value1, value2, ...]
 
-      queryParameter: '',
-      queryParameterType: '',
-      queryOperator: '=',
-      queryValue: '',
+      queryParameter: '', // selected parameter in the current query
+      queryParameterType: '', // the type of the selected parameter
+      queryOperator: '=', // the selected operator of the current query, initial value '='.
+      queryValue: '', // the value of the current query
 
-      queriesForDisplay: [],
-      queries: {},  
+      queriesForDisplay: [],  // queries that being displayed in the queries box
+      queries: {},  // the constructed queries, held as data, before forwarding to the server
 
-      predictionVariables: ["location"],
-      selectedPredictionVariable: '',
+      predictionVariables: ["location"],  // default value 'location', additional values are added according to the queries parameters
+      selectedPredictionVariable: '', // selected prediction variable
 
-      models: [],
-      selectedModel: '',
-      modelParams: [],
-      modelParamValues: {},
-      modelParamsToSend: {},
+      models: [], // list of available models, fetched from the server
+      selectedModel: '',  // selected model type
+      modelParams: [],  // unique parameters of the selected model
+      // modelParamValues: {}, // default values
+      modelParamsToSend: {}, // data dict of [param: value]
     };
 
     this.fetchParameters(); // fetch parameters for building queries
@@ -121,10 +119,10 @@ class RunJobForm extends React.Component {
     return false;
   }
 
-  isNumericParam() {
-    return (this.state.queryParameterType === "int") ? true : false;
-  }
-
+  /**
+   * Function to check if the type of the selected parameter is string
+   * @returns true if type is string, otherwise false
+   */
   isStringParam() {
     return (this.state.queryParameterType === "str") ? true : false;
   }
@@ -304,7 +302,7 @@ class RunJobForm extends React.Component {
    * Checks in the input is valid
    */
   submitJob() {
-    // check input
+    // TODO - check input
     console.log(this.state.queries);
     if (this.state.jobName === "" || this.state.userEmail === "" || 
     this.state.queries.length === 0 || this.state.selectedPredictionVariable === "" || 
@@ -340,6 +338,7 @@ class RunJobForm extends React.Component {
    * Function to reset all collected fields' values
    */
   resetForm() {
+    // TODO - verify all
     this.setState({ queryParameter: '' });
     this.setState({ queryOperator: '=' });
     this.setState({ queryValue: '' });
@@ -356,6 +355,7 @@ class RunJobForm extends React.Component {
     this.setState({ userEmail: {} });
   }
 
+
   /**
    * 1. sets the values of the selected parameter, and its type
    * 2. send request to the server, to fetch all parameter's values
@@ -365,6 +365,7 @@ class RunJobForm extends React.Component {
     this.setState({ queryParameter: value });
     this.setState({});
 
+    // find out the parameter's type //
     const parametersTemp = this.state.parameters;
     var typeTemp;
 
@@ -381,6 +382,7 @@ class RunJobForm extends React.Component {
     this.selectRef.select.clearValue();
 
 
+    // fetch the parameter's coresponding values from the server //
     const promise = Service.fetchFlightParamValues(value);
     promise.then((data) => {
       if (data !== undefined) {
@@ -418,7 +420,11 @@ class RunJobForm extends React.Component {
     }
   }
 
-
+  /**
+   * 
+   * @param {List of objects {label:_, value:_}} option 
+   * @param {String} action 
+   */
   handleInputParamValuesChange(option, { action }) {
     // option is of the following format: [{label: 34, value: 34}, {label: 55, value: 55}]
     // possible actions - select-option, clear, remove-value
@@ -496,6 +502,11 @@ class RunJobForm extends React.Component {
           <h6>Here you may create a new job which will be sent to Slurm.
               The proccess consists of two parts: selecting the data for training, and defining a deep learning model that will be using the selected data.</h6>
         </div>
+        <br />
+
+        <div style={{fontWeight: 'bold', textDecorationLine: 'underline'}}>
+          <h5>Part 1:</h5>
+        </div>
 
         <Form>
           <Form.Group>
@@ -527,7 +538,7 @@ class RunJobForm extends React.Component {
               <Form.Label column sm="9">Please select a subset of the flights that you would like to use during training:</Form.Label>
             </Row>
             <Row>
-              <Form.Label column sm="9">Here you may construct queries (much like SQL queries) in order to select the exact data.</Form.Label>
+              <Form.Label column sm="9">Here you may construct queries in order to select the exact data.</Form.Label>
             </Row>
             <Row>
               <Form.Label column sm="9">1. Select the parameter. </Form.Label>
@@ -536,10 +547,10 @@ class RunJobForm extends React.Component {
               <Form.Label column sm="9">2. Select the operator. </Form.Label>
             </Row>
             <Row>
-              <Form.Label column sm="9">3. Select the desired value from the provided list or enter your own value: </Form.Label>
+              <Form.Label column sm="9">3. Select the desired value from the provided list, or enter your own value: </Form.Label>
             </Row>
             <Row>
-              <Form.Label column sm="9">Please note:</Form.Label>
+              <Form.Label column sm="9">Before proceeding, please note:</Form.Label>
             </Row>
 
             <Container>
@@ -554,57 +565,22 @@ class RunJobForm extends React.Component {
                 </Col>
               </Row>
               <Row>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>{'\u25CF'} Chosen operator: [Range]</Form.Label>
+                <Col md={{ span: 8 }}>
+                  <Form.Label>{'\u25CF'} Chosen operator: [Range], format: (min_value,max_value) without spaces.</Form.Label>
                 </Col>
-                <Col md={{ span: 4 }}>
+                {/* <Col md={{ span: 4 }}>
                   <Form.Label>Format: (min_value,max_value) without spaces.</Form.Label>
-                </Col>
+                </Col> */}
               </Row>
               <Row>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>{'\u25CF'} Chosen operator: [All]</Form.Label>
+                <Col md={{ span: 8 }}>
+                  <Form.Label>{'\u25CF'} Chosen operator: [All], all values are selected, no need to choose/enter values.</Form.Label>
                 </Col>
-                <Col md={{ span: 5 }}>
+                {/* <Col md={{ span: 5 }}>
                   <Form.Label>All values are selected, no need to choose/enter values.</Form.Label>
-                </Col>
+                </Col> */}
               </Row>
             </Container>
-
-            {/* <Container>
-              <Row>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>{'\u25CF'} Chosen operator: [=]</Form.Label>
-                </Col>
-                <Col md={{ span: 5 }}>
-                  <Form.Label>Format: [value] or [value1,value2,...] without spaces.</Form.Label>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>{'\u25CF'} Chosen operator: [&lt;=] or [&gt;=]</Form.Label>
-                </Col>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>Format: [value]</Form.Label>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>{'\u25CF'} Chosen operator: [Range]</Form.Label>
-                </Col>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>Format: (min_value,max_value) without spaces.</Form.Label>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={{ span: 4 }}>
-                  <Form.Label>{'\u25CF'} Chosen operator: [All]</Form.Label>
-                </Col>
-                <Col md={{ span: 5 }}>
-                  <Form.Label>Format: none, all values are selected.</Form.Label>
-                </Col>
-              </Row>
-            </Container> */}
           </Form.Group>
 
           
@@ -641,25 +617,25 @@ class RunJobForm extends React.Component {
             </Col>
 
             <Col>
-            { (this.state.queryOperator === "Range")
-            ?
-            <Form.Control 
-            type="text" placeholder="" disabled={this.isAllOperator()} value={this.isAllOperator() ? "" : this.state.queryValue}
-            onChange={event => this.setState({queryValue: event.target.value})}/>
-            :
-            <Select
-              ref={ref => {
-                this.selectRef = ref;
-              }}
-              isDisabled={this.isAllOperator()}
-              onChange={(option, { action }) => {this.handleInputParamValuesChange(option, { action }); }}
-              isMulti={this.state.queryOperator==='='}
-              name="param-values"
-              options={this.state.parameterValuesAsDicts}
-              className="basic-multi-select"
-              classNamePrefix="select"
-            />
-            }
+              { (this.state.queryOperator === "Range")
+              ?
+              <Form.Control 
+              type="text" placeholder="e.g: (20,30)" disabled={this.isAllOperator()} value={this.isAllOperator() ? "" : this.state.queryValue}
+              onChange={event => this.setState({queryValue: event.target.value})}/>
+              :
+              <Select
+                ref={ref => {
+                  this.selectRef = ref;
+                }}
+                isDisabled={this.isAllOperator()}
+                onChange={(option, { action }) => {this.handleInputParamValuesChange(option, { action }); }}
+                isMulti={this.state.queryOperator==='='}
+                name="param-values"
+                options={this.state.parameterValuesAsDicts}
+                className="basic-multi-select"
+                classNamePrefix="select"
+              />
+              }
 
               {/* <Form.Control as="select" value={this.queryValue}
                 onChange={event => this.setState({ queryValue: event.target.value})}>
@@ -698,6 +674,9 @@ class RunJobForm extends React.Component {
           <br />
           <br />
 
+          <div style={{fontWeight: 'bold', textDecorationLine: 'underline'}}>
+            <h5>Part 2:</h5>
+          </div>
 
           <Form.Group>
             <Row>
@@ -745,12 +724,6 @@ class RunJobForm extends React.Component {
                 Select the name of the model you would like to use.
               </Form.Text>
             </Col>
-
-            {/* <Col column sm="3">
-              <Button variant="info" size="md" onClick={() => { this.fetchModelParams() }}>
-                Fetch Model
-              </Button>
-            </Col> */}
           </Form.Group>
 
           <br />

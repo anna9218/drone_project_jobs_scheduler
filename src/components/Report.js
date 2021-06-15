@@ -108,12 +108,9 @@ function Report(props) {
           Model parameters:
           {renderModelData(props.modelDetails)}
           Model evaluation:
+          <pre>
           {renderJobData(props.reportData)}
-          {/* <p>
-            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
-            consectetur ac, vestibulum at eros.
-          </p> */}
+          </pre>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={props.onHide}>Close</Button>
