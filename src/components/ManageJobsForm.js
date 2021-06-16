@@ -6,29 +6,25 @@ import Report from './Report';
 import Table from 'react-bootstrap/Table';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
-// import IconButton from '@material-ui/core/IconButton';
-// import DeleteIcon from '@material-ui/icons/Delete';
-// import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 
-
-// HOW THE JOB SUPPOSED TO LOOK LIKE
-// {'job_id': '001', 
-//      'job_name_by_user': myFirstJob
-//      'start_time': '10:00', 
-//      'end_time': '11:00', 
-//      'status': 'COMPLETED', 
-//      'model_details': {'optimizer': value,
-//                        'metrics': value,
-//                        'iterations': value,
-//                        'batch_size': value,
-//                        'epochs': value,
-//                        'neurons_in_layer': value}}
-//      'report': {accuracy: 80, loss: 0.43}}
-// 
+//////////////////////////////////////////////////////////
+// HOW THE JOB SUPPOSED TO LOOK LIKE                    //
+// {'job_id': '001',                                    //
+//      'job_name_by_user': myFirstJob                  //
+//      'start_time': '10:00',                          //
+//      'end_time': '11:00',                            //
+//      'status': 'COMPLETED',                          //
+//      'model_details': {'optimizer': value,           //
+//                        'metrics': value,             //
+//                        'iterations': value,          //
+//                        'batch_size': value,          //
+//                        'epochs': value,              //
+//                        'neurons_in_layer': value}}   //
+//      'report': {accuracy: 80, loss: 0.43}}           //
+//////////////////////////////////////////////////////////
 
 
 const Status = {"CANCELED": 1, "COMPLETED": 2, "FAILED": 3, "PENDING": 4, "RUNNING": 5, "TIMEOUT": 6};
@@ -38,32 +34,33 @@ class ManageJobsForm extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            jobs: [
-                {'job_id': '001', 'job_name': "jobA", 'start_time': '10:00', 'end_time': '11:00', 'status': 'COMPLETED', 
-                'model_details': {'optimizer': "adagrad",
-                           'metrics': ["accuracy"],
-                           'iterations': 10,
-                           'batch_size': 32,
-                           'epochs': 100,
-                           'neurons_in_layer': 100},
-                'report': {accuracy: 10, loss: 0.43}},
-                {'job_id': '102', 'job_name': "jobB", 'start_time': '11:00', 'end_time': '12:00', 'status': 'COMPLETED', 
-                'model_details': {'optimizer': "adam",
-                           'metrics': ["accuracy", "recall", "precision"],
-                           'iterations': 30,
-                           'batch_size': 64,
-                           'epochs': 500,
-                           'neurons_in_layer': 200},
-                'report': {accuracy: 20, loss: 1.28}},
-                {'job_id': '456', 'job_name': "jobC", 'start_time': '11:00', 'end_time': '12:00', 'status': 'COMPLETED', 
-                'model_details': {'optimizer': "adagrad",
-                           'metrics': ["accuracy", "precision"],
-                           'iterations': 20,
-                           'batch_size': 128,
-                           'epochs': 300,
-                           'neurons_in_layer': 150},
-                'report': {accuracy: 80, loss: 0.973}}
-                ],
+            jobs: [],
+            // jobs: [
+            //     {'job_id': '001', 'job_name': "jobA", 'start_time': '10:00', 'end_time': '11:00', 'status': 'COMPLETED', 
+            //     'model_details': {'optimizer': "adagrad",
+            //                'metrics': ["accuracy"],
+            //                'iterations': 10,
+            //                'batch_size': 32,
+            //                'epochs': 100,
+            //                'neurons_in_layer': 100},
+            //     'report': {accuracy: 10, loss: 0.43}},
+            //     {'job_id': '102', 'job_name': "jobB", 'start_time': '11:00', 'end_time': '12:00', 'status': 'COMPLETED', 
+            //     'model_details': {'optimizer': "adam",
+            //                'metrics': ["accuracy", "recall", "precision"],
+            //                'iterations': 30,
+            //                'batch_size': 64,
+            //                'epochs': 500,
+            //                'neurons_in_layer': 200},
+            //     'report': {accuracy: 20, loss: 1.28}},
+            //     {'job_id': '456', 'job_name': "jobC", 'start_time': '11:00', 'end_time': '12:00', 'status': 'COMPLETED', 
+            //     'model_details': {'optimizer': "adagrad",
+            //                'metrics': ["accuracy", "precision"],
+            //                'iterations': 20,
+            //                'batch_size': 128,
+            //                'epochs': 300,
+            //                'neurons_in_layer': 150},
+            //     'report': {accuracy: 80, loss: 0.973}}
+            //     ],
             isJobs: false,
             modalShow: false,
             userEmail: '',
@@ -152,16 +149,9 @@ class ManageJobsForm extends React.Component{
                     <td>{end_time}</td>
                     <td>{status}</td>
                     <td>
-                        <Button disabled={!isReport} variant='outline-info' 
-                        onClick={() => this.handleShow(model_details, report)}>
+                        <Button disabled={!isReport} variant='outline-info' onClick={() => this.handleShow(model_details, report)}>
                             {reportText}
                         </Button>
-                        {/* <Report
-                            modelDetails={model_details}
-                            reportData={report}
-                            show={this.state.modalShow}
-                            onHide={() => this.setState({modalShow: false})}
-                        /> */}
                     </td>
                     <td>
                         <Button disabled={!isCancelable} variant='outline-info' onClick={()=>{this.cancelJob(index, job_id)}}>
@@ -175,7 +165,6 @@ class ManageJobsForm extends React.Component{
 
 
     handleShow(model_details, report) {
-        console.log(report);
         this.setState({activeReport: report});
         this.setState({activeModelDetails: model_details} );
         this.setState({modalShow: true});
@@ -224,7 +213,7 @@ class ManageJobsForm extends React.Component{
         <br />
 
         <div style={{marginTop:"1%", display: "flex", justifyContent: "center", alignItems: "center"}}>
-        <Form>
+        <Form className='manage-jobs'>
             <Form.Group>
                 <Row>
                     <Col column sm="12">
@@ -234,7 +223,7 @@ class ManageJobsForm extends React.Component{
                 <Row>
                 <Form.Label column sm="2">Email:</Form.Label>
                 <Col column sm="10">
-                    <Form.Control onChange={event => {this.setState({userEmail: event.target.value})}} type="text" placeholder="Email"/>
+                    <Form.Control id="user-email" value={this.state.userEmail} onChange={event => {this.setState({userEmail: event.target.value})}} type="text" placeholder="Email"/>
                 </Col>
                 </Row>
                 <br />

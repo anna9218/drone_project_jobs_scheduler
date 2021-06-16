@@ -1,6 +1,6 @@
 import axios from "axios";
-// var ip = "132.72.67.188";   // IP of the university's server 
-var ip = "localhost"
+var ip = "132.72.67.188";   // IP of the university's server 
+// var ip = "localhost"
 var port = "8021";  // Application port
 
 

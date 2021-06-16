@@ -499,7 +499,7 @@ class RunJobForm extends React.Component {
     // the parameters fields relevant to a specific model
     var ModelParamFields = this.state.modelParams.map(([param, paramType, paramDefaultValue]) =>
       <div>
-        <Form>
+        <Form className='model-params'>
           <Form.Group as={Row}>
             <Form.Label column sm="3">{param}:</Form.Label>
             <Col column sm="6">
@@ -529,7 +529,7 @@ class RunJobForm extends React.Component {
     // the displayed queries defined by the user
     var QueriesList = this.state.queriesForDisplay.map((queryString) =>
       <div >
-        <Form inline>
+        <Form inline className='queries-list'>
           <Form.Group as={Row}>
             <Form.Label sm="8">{queryString}</Form.Label>
             <Col>
@@ -561,7 +561,7 @@ class RunJobForm extends React.Component {
           <h5>Part 1:</h5>
         </div>
 
-        <Form>
+        <Form className='run-job'>
           <Form.Group>
             <Row>
               <Form.Label column sm="9">First of all, please select a unique name for your new job, and enter your email address:</Form.Label>
@@ -569,7 +569,8 @@ class RunJobForm extends React.Component {
             <Row>
               <Form.Label column sm="3">Job name:</Form.Label>
               <Col column sm="6">
-                <Form.Control onChange={event => { this.setState({ jobName: event.target.value }) }} type="text" placeholder="Job name" />
+                <Form.Control 
+                id="job-name" value={this.state.jobName} onChange={event => { this.setState({ jobName: event.target.value }) }} type="text" placeholder="Job name" />
               </Col>
             </Row>
             <br />
@@ -577,7 +578,8 @@ class RunJobForm extends React.Component {
             <Row>
               <Form.Label column sm="3">Email:</Form.Label>
               <Col column sm="6">
-                <Form.Control onChange={event => this.setState({userEmail: event.target.value}) } type="email" placeholder="Email" 
+                <Form.Control 
+                id="user-email" onChange={event => this.setState({userEmail: event.target.value}) } type="email" placeholder="Email" value={this.state.userEmail}
                 pattern="^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$"/>
               </Col>
             </Row>
@@ -621,17 +623,11 @@ class RunJobForm extends React.Component {
                 <Col md={{ span: 8 }}>
                   <Form.Label>{'\u25CF'} Chosen operator: [Range], format: (min_value,max_value) without spaces.</Form.Label>
                 </Col>
-                {/* <Col md={{ span: 4 }}>
-                  <Form.Label>Format: (min_value,max_value) without spaces.</Form.Label>
-                </Col> */}
               </Row>
               <Row>
                 <Col md={{ span: 8 }}>
                   <Form.Label>{'\u25CF'} Chosen operator: [All], all values are selected, no need to choose/enter values.</Form.Label>
                 </Col>
-                {/* <Col md={{ span: 5 }}>
-                  <Form.Label>All values are selected, no need to choose/enter values.</Form.Label>
-                </Col> */}
               </Row>
             </Container>
           </Form.Group>
@@ -640,7 +636,7 @@ class RunJobForm extends React.Component {
           {/* QUERY FILEDS ROW - parameter, operator, value choice */}
           <Form.Group as={Row}>
             <Col>
-              <Form.Control as="select" value={this.queryParameter}
+              <Form.Control id="query-params" as="select" value={this.queryParameter}
                 onChange={event => this.handleParam(event.target.value)}>
                 <option>Select Parameter</option>
                 {this.state.parameters !== null ?
@@ -656,7 +652,7 @@ class RunJobForm extends React.Component {
             </Col>
 
             <Col sm={3}>
-              <Form.Control as="select" value={this.state.queryOperator}
+              <Form.Control id="query-operators" as="select" value={this.state.queryOperator}
                 onChange={event => this.setState({ queryOperator: event.target.value })}>
                 <option value={'='}> {'='} </option>
                 <option disabled={this.isStringParam()} value={'<='}> {'<='} </option>
@@ -673,7 +669,7 @@ class RunJobForm extends React.Component {
               { (this.state.queryOperator === "Range")
               ?
               <Form.Control 
-              type="text" placeholder="e.g: (20,30)" disabled={this.isAllOperator()} value={this.isAllOperator() ? "" : this.state.queryValue}
+              id="query-value" type="text" placeholder="e.g: (20,30)" disabled={this.isAllOperator()} value={this.isAllOperator() ? "" : this.state.queryValue}
               onChange={event => this.setState({queryValue: event.target.value})}/>
               :
               <Select
@@ -690,16 +686,6 @@ class RunJobForm extends React.Component {
               />
               }
 
-              {/* <Form.Control as="select" value={this.queryValue}
-                onChange={event => this.setState({ queryValue: event.target.value})}>
-                <option>Select Value</option>
-                {this.state.parameterValues !== null ?
-                  this.state.parameterValues.map((parameterValue) => (
-                    <option value={parameterValue}>{parameterValue}</option>
-                  ))
-                  : null
-                }
-              </Form.Control> */}
               <Form.Text className="text-muted">
                 Select the desired value\s.              
               </Form.Text>
@@ -740,7 +726,7 @@ class RunJobForm extends React.Component {
           <Form.Group as={Row}>
             <Form.Label column sm="3">Select the target variable:</Form.Label>
             <Col column sm="6">
-              <Form.Control as="select" value={this.queryOperator}
+              <Form.Control id="target-variable" key='select-var' as="select" value={this.queryOperator}
                 onChange={event => this.setState({ selectedPredictionVariable: event.target.value })}>
                 <option>Select Variable</option>
                 {this.state.predictionVariables !== null ?
@@ -759,7 +745,7 @@ class RunJobForm extends React.Component {
           <Form.Group as={Row}>
             <Form.Label column sm="3">Select model:</Form.Label>
             <Col column sm="6">
-              <Form.Control as="select" value={this.queryOperator}
+              <Form.Control id="model-type" as="select" value={this.queryOperator}
                 onChange={event => {
                 this.setState({ selectedModel: event.target.value });
                 this.fetchModelParams(event.target.value);
