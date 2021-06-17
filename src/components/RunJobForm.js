@@ -328,6 +328,14 @@ class RunJobForm extends React.Component {
     return true;
   }
 
+  checkJobNameValid() {
+    const jobName_ = this.state.jobName;
+    if (jobName_.includes(" ")) { return false; }
+    if (!/^[a-zA-Z0-9_]+$/.test(jobName_)) { return false; }
+
+    return true;
+  }
+
   /**
    * Function to submit all collected values and parameters to the server, to create and run a new job
    * Checks in the input is valid
@@ -341,6 +349,11 @@ class RunJobForm extends React.Component {
 
     if (!this.checkModelParamValuesNotEmpty()) {
       alert("Oops, some model values are empty or invalid! Please insert correct values");
+      return false;
+    }
+
+    if (!this.checkJobNameValid()) {
+      alert("Oops, the job name is not valid! Please choose a different name (one word, only letters, numbers, and underscore are allowed)");
       return false;
     }
 
