@@ -54,7 +54,6 @@ class RunJobForm extends React.Component {
       models: [], // list of available models, fetched from the server
       selectedModel: '',  // selected model type
       modelParams: [],  // unique parameters of the selected model
-      // modelParamValues: {}, // default values
       modelParamsToSend: {}, // data dict of [param: value]
     };
 
@@ -505,8 +504,10 @@ class RunJobForm extends React.Component {
             <Col column sm="6">
               <Form.Control id={param}
                 onChange={event => {
-                  this.state.modelParamsToSend[param] = parser(paramType, event.target.value);
-                  // this.state.modelParamValues[param] = this.state.modelParamsToSend[param];
+                  var parsedValue = parser(paramType, event.target.value);
+                  if (parsedValue !== false) {
+                    this.state.modelParamsToSend[param] = parsedValue;
+                  }
                 }}
                 type="text" placeholder={paramDefaultValue} />
               

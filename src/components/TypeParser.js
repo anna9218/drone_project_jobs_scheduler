@@ -10,6 +10,7 @@ export function parser(type, value){
     console.log(value);
 
     if (type === "int"){
+        if (value.length === 0) { return value;}
         value = parseInt(value);
         // if was not able to parse - not int type
         if (isNaN(value)) {
