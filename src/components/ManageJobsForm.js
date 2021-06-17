@@ -182,11 +182,11 @@ class ManageJobsForm extends React.Component{
         if(data !== undefined){
             if (data["msg"] != null){
                 alert(data["msg"]);
-                this.removeJobFromTable(index, job_id);
+                // this.removeJobFromTable(index, job_id);
             }
         }});
         
-        this.removeJobFromTable(index, job_id);
+        // this.removeJobFromTable(index, job_id);
     }
 
 

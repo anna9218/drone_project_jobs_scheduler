@@ -170,8 +170,11 @@ class RunJobForm extends React.Component {
 
       // handle adding queries for display, and add corresponding target variable //
       this.setState({ queriesForDisplay: [...this.state.queriesForDisplay, queryStr] })
-      this.setState({ predictionVariables: [...this.state.predictionVariables, this.state.queryParameter] });
 
+      // check if query param is location -> don't add it twice
+      var queryParameter_ = this.state.queryParameter;
+      if (queryParameter_ === "location") { return; }
+      this.setState({ predictionVariables: [...this.state.predictionVariables, this.state.queryParameter] });
       return;
       }
     }
@@ -238,6 +241,11 @@ class RunJobForm extends React.Component {
 
     // 4. handle adding queries for display, and add corresponding target variable //
     this.setState({ queriesForDisplay: [...this.state.queriesForDisplay, queryStr] })
+
+    // check if query param is location -> don't add it twice
+    var queryParameter_ = this.state.queryParameter;
+    console.log(queryParameter_);
+    if (queryParameter_ === "location") { return; }
     this.setState({ predictionVariables: [...this.state.predictionVariables, this.state.queryParameter] });
 
     // 5. reset parameter value, and clear the select field in display //
@@ -258,13 +266,16 @@ class RunJobForm extends React.Component {
     this.setState({ queriesForDisplay: queries });
 
 
-    // remove target variable
+    // remove target variable (only if not "location")
     var predictionVars = this.state.predictionVariables;
     var parameter = query.split(/:|=|<|>/)[0];
-    const indexPar = predictionVars.indexOf(parameter);
-    predictionVars.splice(indexPar, 1);
-    this.setState({ predictionVariables: predictionVars });
-
+    console.log(parameter);
+    if (parameter !== "location") {
+      const indexPar = predictionVars.indexOf(parameter);
+      predictionVars.splice(indexPar, 1);
+      this.setState({ predictionVariables: predictionVars });
+    }
+    
 
     // remove query from queries to send 
     var queriesDict = this.state.queries;
